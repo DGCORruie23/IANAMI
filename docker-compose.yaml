@@ -1,0 +1,49 @@
+services:
+  web:
+    profiles: ["dev", "server"]
+    container_name: IANAMIapp
+    restart: always
+    build: ./IANAMI
+    command: gunicorn server.wsgi:application --bind 0.0.0.0:8000 --reload --workers 5 --threads 2 --timeout 60
+    expose:
+      - 8000
+    env_file:
+      - .env.dev
+    links:
+      - db
+    volumes:
+      - ./media_volume:/src/IANAMI/data/media
+      - ./static_volume:/src/IANAMI/data/static
+      - ./IANAMI/server:/src/IANAMI/server
+      - ./IANAMI/inteligencia:/src/IANAMI/inteligencia
+      - ./IANAMI/carga:/src/IANAMI/carga
+
+  db:
+    profiles: ["dev", "server"]
+    container_name: IANAMIdbpg
+    image: postgres:17-alpine
+    restart: always
+    shm_size: 128mb
+    env_file:
+      - .env.db
+    environment:
+      # Fuerza una inicialización limpia compatible con cualquier sistema operativo de destino
+      POSTGRES_INITDB_ARGS: "--locale=C --encoding=UTF8"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  nginx:
+    profiles: ["dev", "server"]
+    container_name: IANAMInginx
+    build: ./nginx
+    expose:
+      - 443
+    ports:
+      - 443:443
+      - 80:80
+    links:
+      - web
+    volumes:
+      - ./static_volume:/src/IANAMI/data/static
+      - ./media_volume:/src/IANAMI/data/media
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf

@@ -1,0 +1,567 @@
+import csv
+import io
+import unicodedata
+import json
+import pandas as pd
+from datetime import datetime
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.db import transaction
+from django.contrib.auth.decorators import login_required
+from .models import (
+    Estado, EstadoOR, Nacionalidad, CanalizadoAdulto, CanalizadoNNA, CondicionEstancia,
+    MotivoEstancia, Encuentro, ExtranjeroRecibido, Inadmision, Internacion,
+    MexicanoRecibido, Presentado, Rescatado, Retornado, Traslado, Caravana, ActasCivil,
+    TramitesMigratorios
+)
+
+# Cache dictionaries for fast queries
+estados_cache = {}
+nacs_cache = {}
+
+def clean_text(text):
+    if not text:
+        return ""
+    # Normalize unicode characters to decompose them (remove accents)
+    nfkd_form = unicodedata.normalize('NFKD', str(text))
+    # Filter out the combining diacritical marks
+    unaccented = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+    # Convert to uppercase and strip whitespace
+    return unaccented.upper().strip()
+
+def preload_nationalities():
+    excel_path = "/Users/dgcor/Documents/DOCKER PROJ/comisionado/ianami-datos/Nacionalidades-Paises.xlsx"
+    try:
+        df = pd.read_excel(excel_path, header=None)
+        names = []
+        for col in df.columns:
+            names.extend(df[col].dropna().astype(str).tolist())
+            
+        nacs_to_create = []
+        existing_nacs = set(Nacionalidad.objects.values_list('nombre', flat=True))
+        
+        for name in names:
+            clean_name = clean_text(name)
+            if clean_name and clean_name not in existing_nacs:
+                nacs_to_create.append(Nacionalidad(nombre=clean_name))
+                existing_nacs.add(clean_name)
+                
+        if nacs_to_create:
+            Nacionalidad.objects.bulk_create(nacs_to_create)
+            print(f"[preload] Cargadas {len(nacs_to_create)} nacionalidades desde el Excel.")
+    except Exception as e:
+        print("[preload] Error cargando nacionalidades desde Excel:", e)
+
+def init_caches():
+    global estados_cache, nacs_cache
+    estados_cache = {e.estado.nombre.upper().strip(): e for e in EstadoOR.objects.select_related('estado').all()}
+    nacs_cache = {n.nombre.upper().strip(): n for n in Nacionalidad.objects.all()}
+
+def clean_state_name(nombre):
+    if not nombre:
+        return ""
+    val_str = str(nombre).strip().upper()
+    prefixes = ["O.R. ", "OR ", "O.R."]
+    for p in prefixes:
+        if val_str.startswith(p):
+            val_str = val_str[len(p):].strip()
+    return clean_text(val_str)
+
+def get_existing_estado(nombre):
+    nombre_clean = clean_state_name(nombre)
+    if not nombre_clean:
+        return None
+    if nombre_clean in estados_cache:
+        return estados_cache[nombre_clean]
+    try:
+        est = Estado.objects.get(nombre=nombre_clean)
+        estado_or, _ = EstadoOR.objects.get_or_create(estado=est)
+        estados_cache[nombre_clean] = estado_or
+        return estado_or
+    except Estado.DoesNotExist:
+        return None
+
+def get_or_create_estado(nombre):
+    nombre_clean = clean_state_name(nombre)
+    if not nombre_clean:
+        nombre_clean = "DESCONOCIDO"
+    if nombre_clean not in estados_cache:
+        est, _ = Estado.objects.get_or_create(nombre=nombre_clean)
+        estado_or, _ = EstadoOR.objects.get_or_create(estado=est)
+        estados_cache[nombre_clean] = estado_or
+    return estados_cache[nombre_clean]
+
+
+def get_or_create_nacionalidad(nombre):
+    nombre_clean = clean_text(nombre)
+    if not nombre_clean:
+        nombre_clean = "DESCONOCIDA"
+    if nombre_clean not in nacs_cache:
+        # Fallback to create if not found, to avoid losing data, but in clean format
+        nac, _ = Nacionalidad.objects.get_or_create(nombre=nombre_clean)
+        nacs_cache[nombre_clean] = nac
+    return nacs_cache[nombre_clean]
+
+def parse_date(date_str):
+    if not date_str:
+        return None
+    date_str = str(date_str).strip()
+    if ' ' in date_str:
+        date_str = date_str.split(' ')[0]
+    try:
+        # Prioritize pandas, which resolves 9/11/24 as 2024-09-11 (month-first) by default
+        return pd.to_datetime(date_str, dayfirst=False).date()
+    except Exception:
+        pass
+    for fmt in ('%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', '%d/%m/%Y', '%d/%m/%y', '%Y/%m/%d'):
+        try:
+            return datetime.strptime(date_str, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+def parse_int(val):
+    if not val:
+        return 0
+    val_clean = val.strip().replace(',', '').replace(' ', '')
+    if val_clean in ('-', '', 'null', 'None'):
+        return 0
+    try:
+        return int(val_clean)
+    except ValueError:
+        return 0
+
+def process_row_to_batch(model_type, row, batch):
+    rows_added = 0
+    if model_type == "canalizados_adultos":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("ESTADO / O.R."))
+        nac = get_or_create_nacionalidad(row.get("NACIONALIDAD"))
+        obj = CanalizadoAdulto(
+            dia=dia, estado=estado, nacionalidad=nac,
+            apellidos=clean_text(row.get("APELLIDO (S)")),
+            nombres=clean_text(row.get("NOMBRE (S)")),
+            sexo=clean_text(row.get("SEXO")),
+            motivo_salida=clean_text(row.get("MOTIVO DE SALIDA"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "canalizados_nna":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("ESTADO / O.R."))
+        nac = get_or_create_nacionalidad(row.get("NACIONALIDAD"))
+        nac_date = parse_date(row.get("FECHA DE NACIMIENTO"))
+        obj = CanalizadoNNA(
+            dia=dia, estado=estado, nacionalidad=nac,
+            apellidos=clean_text(row.get("APELLIDO (S)")),
+            nombres=clean_text(row.get("NOMBRE (S)")),
+            fecha_nacimiento=nac_date,
+            sexo=clean_text(row.get("SEXO")),
+            clasificacion=clean_text(row.get("CLASIFICACIÓN")),
+            motivo_salida=clean_text(row.get("MOTIVO DE SALIDA"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "condicion_estancia":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("ESTADO / O.R."))
+        nac = get_or_create_nacionalidad(row.get("NACIONALIDAD"))
+        obj = CondicionEstancia(
+            dia=dia, estado=estado, nacionalidad=nac,
+            documentos_migratorios=parse_int(row.get("Documentos Migratorios")),
+            tarjeta_residente_permanente=parse_int(row.get("Tarjeta de Residente Permanente")),
+            tarjeta_residente_temporal=parse_int(row.get("Tarjeta de Residente Temporal")),
+            tarjeta_residente_temporal_estudiante=parse_int(row.get("Tarjeta de Residente Temporal Estudiante")),
+            tarjeta_visitante_razones_humanitarias=parse_int(row.get("Tarjeta de Visitante por razones humanitarias")),
+            tarjeta_visitante_adopcion=parse_int(row.get("Tarjeta de Visitante con fines de adopción")),
+            tarjeta_visitante_regional=parse_int(row.get("Tarjeta de Visitante Regional")),
+            tarjeta_visitante_trabajador_fronterizo=parse_int(row.get("Tarjeta de Visitante Trabajador Fronterizo"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "motivo_estancia":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("ESTADO / O.R."))
+        nac = get_or_create_nacionalidad(row.get("NACIONALIDAD"))
+        obj = MotivoEstancia(
+            dia=dia, estado=estado, nacionalidad=nac,
+            motivo_estancia=clean_text(row.get("Motivo de Estancia")),
+            documentos_migratorios=parse_int(row.get("Documentos Migratorios")),
+            tarjeta_residente_permanente=parse_int(row.get("Tarjeta de Residente Permanente")),
+            tarjeta_residente_temporal=parse_int(row.get("Tarjeta de Residente Temporal")),
+            tarjeta_residente_temporal_estudiante=parse_int(row.get("Tarjeta de Residente Temporal Estudiante")),
+            tarjeta_visitante_razones_humanitarias=parse_int(row.get("Tarjeta de Visitante por razones humanitarias")),
+            tarjeta_visitante_adopcion=parse_int(row.get("Tarjeta de Visitante con fines de adopción")),
+            tarjeta_visitante_regional=parse_int(row.get("Tarjeta de Visitante Regional")),
+            tarjeta_visitante_trabajador_fronterizo=parse_int(row.get("Tarjeta de Visitante Trabajador Fronterizo"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "encuentros":
+        fecha = parse_date(row.get("FECHA"))
+        if not fecha:
+            return 0
+        struct_keys = {"FECHA", "Encuentro", "Location", "Ciudad EEUU", "Ciudad MX", "TOTAL", "Mexico", "Extranjeros"}
+        desglose = {}
+        for k, v in row.items():
+            if k not in struct_keys and parse_int(v) > 0:
+                clean_k = clean_text(k)
+                desglose[clean_k] = parse_int(v)
+        obj = Encuentro(
+            fecha=fecha, encuentro=clean_text(row.get("Encuentro")),
+            location=clean_text(row.get("Location")),
+            ciudad_eeuu=clean_text(row.get("Ciudad EEUU")),
+            ciudad_mx=clean_text(row.get("Ciudad MX")),
+            total=parse_int(row.get("TOTAL")),
+            mexico=parse_int(row.get("Mexico")), extranjeros=parse_int(row.get("Extranjeros")),
+            desglose_nacionalidades=desglose
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "extranjeros_recibidos":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("ESTADO / O.R."))
+        nac = get_or_create_nacionalidad(row.get("NACIONALIDAD"))
+        obj = ExtranjeroRecibido(
+            dia=dia, estado=estado, nacionalidad=nac,
+            total=parse_int(row.get("EXTRANJEROS RECIBIDOS DE EE.UU.")),
+            adultos=parse_int(row.get("ADULTOS")), menores=parse_int(row.get("MENORES"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "inadmisiones":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("ESTADO / O.R."))
+        nac = get_or_create_nacionalidad(row.get("NACIONALIDAD"))
+        obj = Inadmision(
+            dia=dia, estado=estado, nacionalidad=nac,
+            total=parse_int(row.get("INADMITIDOS"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "internaciones":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("ESTADO / O.R."))
+        nac = get_or_create_nacionalidad(row.get("NACIONALIDAD"))
+        obj = Internacion(
+            dia=dia, estado=estado, nacionalidad=nac,
+            total=parse_int(row.get("TOTAL DE INGRESOS")),
+            aereo=parse_int(row.get("INGRESOS AÉREOS")),
+            maritimo=parse_int(row.get("INGRESOS MARÍTIMOS")),
+            terrestre=parse_int(row.get("INGRESOS TERRESTRES"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "mexicanos_recibidos":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("ESTADO / O.R."))
+        obj = MexicanoRecibido(
+            dia=dia, estado=estado,
+            total=parse_int(row.get("MEXICANOS REPATRIADOS")),
+            adultos=parse_int(row.get("ADULTOS")), menores=parse_int(row.get("MENORES")),
+            nna_no_acompanados=parse_int(row.get("NNA NO ACOMPAÑADOS")),
+            nna_acompanados=parse_int(row.get("NNA ACOMPAÑADOS")),
+            terrestres=parse_int(row.get("TERRESTRES")), vuelos=parse_int(row.get("VUELOS PRIM"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "presentados":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("ESTADO / O.R."))
+        nac = get_or_create_nacionalidad(row.get("NACIONALIDAD"))
+        obj = Presentado(
+            dia=dia, estado=estado, nacionalidad=nac,
+            estacion_migratoria=clean_text(row.get("ESTACIÓN O ESTANCIA MIGRATORIA")),
+            total=parse_int(row.get("PRESENTADOS"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "rescatados":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("ESTADO / O.R."))
+        nac = get_or_create_nacionalidad(row.get("NACIONALIDAD"))
+        obj = Rescatado(
+            dia=dia, estado=estado, nacionalidad=nac,
+            total=parse_int(row.get("EXTRANJEROS RESCATADOS POR EL INM")),
+            primera_vez=parse_int(row.get("PRIMERA VEZ")),
+            reincidencia=parse_int(row.get("REINCIDENCIA")),
+            presentados_em=parse_int(row.get("PRESENTADOS EN EM")),
+            canalizados_dif=parse_int(row.get("CANALIZADOS AL DIF")),
+            conduccion_norte_sur=parse_int(row.get("CONDUCCIÓN DE NORTE A SUR"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "retornados":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("ESTADO / O.R."))
+        nac = get_or_create_nacionalidad(row.get("NACIONALIDAD"))
+        obj = Retornado(
+            dia=dia, estado=estado, nacionalidad=nac,
+            total=parse_int(row.get("RETORNADOS A SU PAÍS")),
+            deportados=parse_int(row.get("DEPORTADOS")),
+            retornos_asistidos=parse_int(row.get("RETORNOS ASISTIDOS"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "traslados":
+        dia = parse_date(row.get("DIA"))
+        if not dia:
+            return 0
+        dest_states = ["Baja California", "Sonora", "Chihuahua", "Coahuila", "Nuevo León", "Tamaulipas"]
+        for dest in dest_states:
+            val = parse_int(row.get(dest))
+            if val > 0:
+                estado_orig = get_or_create_estado("CHIAPAS")
+                estado_dest = get_or_create_estado(dest)
+                obj = Traslado(dia=dia, estado_origen=estado_orig, estado_destino=estado_dest, total=val)
+                batch.append(obj)
+                rows_added += 1
+    elif model_type == "caravanas":
+        dia = parse_date(row.get("DIA") or row.get("Fecha"))
+        if not dia:
+            return 0
+        est_partida = get_or_create_estado(row.get("Estado de Partida") or row.get("Lugar de partida"))
+        est_disol = get_or_create_estado(row.get("Estado de Disolución")) if row.get("Estado de Disolución") else None
+        struct_keys = {
+            "Año", "DIA", "Fecha", "Estado de Partida", "Lugar de Partida", "Lugar de partida",
+            "Nombre de la Caravana", "Estado de Disolución", "Lugar de Disolución",
+            "Personas que Aproximadamente Incian la movilización", "Personas Rescatadas",
+            "Personas Documentadas", "Personas Trasladadas a Oficinas distintas al origen",
+            "Tipo de Documento o Procedimiento", "TVRH", "PAM", "FMM", "CITA COMAR",
+            "Documentos Provisionales y Oficios de Salida"
+        }
+        desglose = {}
+        for k, v in row.items():
+            if k not in struct_keys and parse_int(v) > 0:
+                clean_k = clean_text(k)
+                desglose[clean_k] = parse_int(v)
+        obj = Caravana(
+            dia=dia, anio=parse_int(row.get("Año") or str(dia.year)),
+            estado_partida=est_partida,
+            lugar_partida=clean_text(row.get("Lugar de Partida") or row.get("Lugar de partida")),
+            nombre=clean_text(row.get("Nombre de la Caravana")),
+            estado_disolucion=est_disol,
+            lugar_disolucion=clean_text(row.get("Lugar de Disolución")),
+            personas_inicio=parse_int(row.get("Personas que Aproximadamente Incian la movilización")),
+            personas_rescatadas=parse_int(row.get("Personas Rescatadas")),
+            personas_documentadas=parse_int(row.get("Personas Documentadas")),
+            personas_trasladadas=parse_int(row.get("Personas Trasladadas a Oficinas distintas al origen")),
+            tipo_documento=clean_text(row.get("Tipo de Documento o Procedimiento")),
+            tvrh=parse_int(row.get("TVRH")), pam=parse_int(row.get("PAM")),
+            fmm=parse_int(row.get("FMM")), cita_comar=parse_int(row.get("CITA COMAR")),
+            docs_provisionales=parse_int(row.get("Documentos Provisionales y Oficios de Salida")),
+            desglose_nacionalidades=desglose
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "actas_civil":
+        fecha_sol = parse_date(row.get("FECHA DE SOLICITUD"))
+        if not fecha_sol:
+            return 0
+        est_val = get_existing_estado(row.get("OFICINA DE REPRESENTACIÓN"))
+        if not est_val or not est_val.estado:
+            return 0
+        estado_instance = est_val.estado
+        nac = get_or_create_nacionalidad(row.get("NACIONALIDAD DE LA (S) PERSONA (S) PROMOVENTE (S)"))
+        fecha_reg = parse_date(row.get("FECHA DE REGISTRO"))
+        
+        obj = ActasCivil(
+            fecha_solicitud=fecha_sol,
+            estado=estado_instance,
+            oficina=clean_text(row.get("OR SOLICITANTE DE VALIDACIONES"))[:100],
+            nacionalidad=nac,
+            nut=clean_text(row.get("NUT (S) RELACIONADO (S)"))[:100],
+            tipo_tramite=clean_text(row.get("TIPO DE TRÁMITE MIGRATORIO"))[:250],
+            tipo_acto=clean_text(row.get("TIPO DE ACTO REGISTRAL"))[:100],
+            no_acta=clean_text(row.get("NO. DE ACTA"))[:100],
+            oficialia=clean_text(row.get("OFICIALÍA/JUZGADO"))[:250],
+            libro=clean_text(row.get("LIBRO"))[:100],
+            entidad=clean_text(row.get("ENTIDAD FEDERATIVA DE REGISTRO"))[:50],
+            municipio=clean_text(row.get("MUNICIPIO/ALCALDÍA DE REGISTRO"))[:100],
+            fecha_registro=fecha_reg,
+            validacion=clean_text(row.get("RESULTADO DE LA VALIDACIÓN"))[:100]
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "tramites_migratorios":
+        fecha = parse_date(row.get("Fecha"))
+        if not fecha:
+            return 0
+        est_val = get_existing_estado(row.get("Entidad Federativa"))
+        if not est_val or not est_val.estado:
+            return 0
+        estado_instance = est_val.estado
+        nac = get_or_create_nacionalidad(row.get("País / Empleador"))
+        
+        obj = TramitesMigratorios(
+            fecha=fecha,
+            estado=estado_instance,
+            oficina=clean_text(row.get("Oficina"))[:100],
+            tramite=clean_text(row.get("Trámite"))[:100],
+            nacionalidad=nac,
+            recibidos=parse_int(row.get("Recibidos")),
+            concluidos=parse_int(row.get("Concluidos")),
+            resueltos=parse_int(row.get("Resueltos")),
+            resueltos_dentro_plazo=parse_int(row.get("Resueltos dentro del plazo")),
+            resueltos_fuera_plazo=parse_int(row.get("Resueltos fuera del plazo")),
+            proceso=parse_int(row.get("En proceso")),
+            proceso_dentro_plazo=parse_int(row.get("En proceso dentro del plazo")),
+            proceso_fuera_plazo=parse_int(row.get("En proceso fuera del plazo"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    return rows_added
+
+@login_required
+def upload_view(request):
+    if request.method == "POST":
+        import json
+        is_json = request.content_type == "application/json"
+        
+        if is_json:
+            try:
+                data = json.loads(request.body)
+            except Exception as e:
+                return JsonResponse({"status": "error", "message": f"JSON inválido: {str(e)}"}, status=400)
+            model_type = data.get("model_type")
+            rows = data.get("rows", [])
+        else:
+            csv_file = request.FILES.get("file")
+            model_type = request.POST.get("model_type")
+            
+            if not csv_file or not model_type:
+                return JsonResponse({"status": "error", "message": "Archivo o tipo de modelo faltante."}, status=400)
+        
+        # Handle nationalities catalog separately
+        if model_type == "nacionalidades":
+            try:
+                if is_json:
+                    names = []
+                    for row in rows:
+                        if isinstance(row, dict):
+                            names.extend([str(v) for v in row.values() if v])
+                        elif isinstance(row, str):
+                            names.append(row)
+                else:
+                    df = pd.read_excel(csv_file, header=None)
+                    names = []
+                    for col in df.columns:
+                        names.extend(df[col].dropna().astype(str).tolist())
+                    
+                nacs_to_create = []
+                existing_nacs = set(Nacionalidad.objects.values_list('nombre', flat=True))
+                
+                for name in names:
+                    clean_name = clean_text(name)
+                    if clean_name and clean_name not in existing_nacs:
+                        nacs_to_create.append(Nacionalidad(nombre=clean_name))
+                        existing_nacs.add(clean_name)
+                        
+                if nacs_to_create:
+                    Nacionalidad.objects.bulk_create(nacs_to_create)
+                return JsonResponse({"status": "success", "message": f"Se cargaron exitosamente {len(nacs_to_create)} nuevas nacionalidades desde el Excel en MAYÚSCULAS y SIN ACENTOS."})
+            except Exception as e:
+                return JsonResponse({"status": "error", "message": f"Error al procesar el catálogo de nacionalidades: {str(e)}"}, status=500)
+
+        init_caches()
+        
+        if is_json:
+            items_iterator = rows
+        else:
+            file_data = csv_file.read().decode("utf-8-sig")
+            items_iterator = csv.DictReader(io.StringIO(file_data))
+        
+        chunk_size = 10000
+        batch = []
+        rows_processed = 0
+        
+        model_classes = {
+            "canalizados_adultos": CanalizadoAdulto,
+            "canalizados_nna": CanalizadoNNA,
+            "condicion_estancia": CondicionEstancia,
+            "motivo_estancia": MotivoEstancia,
+            "encuentros": Encuentro,
+            "extranjeros_recibidos": ExtranjeroRecibido,
+            "inadmisiones": Inadmision,
+            "internaciones": Internacion,
+            "mexicanos_recibidos": MexicanoRecibido,
+            "presentados": Presentado,
+            "rescatados": Rescatado,
+            "retornados": Retornado,
+            "traslados": Traslado,
+            "caravanas": Caravana,
+            "actas_civil": ActasCivil,
+            "tramites_migratorios": TramitesMigratorios
+        }
+        
+        model_class = model_classes.get(model_type)
+        if not model_class:
+            return JsonResponse({"status": "error", "message": "Tipo de modelo no reconocido."}, status=400)
+            
+        try:
+            for idx, row in enumerate(items_iterator):
+                # Clean headers and values by stripping whitespace, casting keys and values to strings
+                row = {str(k).strip() if k is not None else "": str(v).strip() if v is not None else "" for k, v in row.items() if k is not None}
+                
+                if not any(row.values()):
+                    continue
+                
+                try:
+                    rows_added = process_row_to_batch(model_type, row, batch)
+                    rows_processed += rows_added
+                except Exception as row_error:
+                    return JsonResponse({
+                        "status": "error",
+                        "message": f"Error en la fila {idx + 1} del lote: {str(row_error)}",
+                        "row_index": idx
+                    }, status=400)
+                
+                if len(batch) >= chunk_size:
+                    try:
+                        with transaction.atomic():
+                            model_class.objects.bulk_create(batch)
+                    except Exception as db_error:
+                        return JsonResponse({
+                            "status": "error",
+                            "message": f"Error al guardar lote en la base de datos: {str(db_error)}"
+                        }, status=400)
+                    batch = []
+            
+            if batch:
+                try:
+                    with transaction.atomic():
+                        model_class.objects.bulk_create(batch)
+                except Exception as db_error:
+                    return JsonResponse({
+                        "status": "error",
+                        "message": f"Error al guardar lote final en la base de datos: {str(db_error)}"
+                    }, status=400)
+                    
+            return JsonResponse({"status": "success", "message": f"Se cargaron exitosamente {rows_processed} registros en MAYÚSCULAS y SIN ACENTOS."})
+            
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": f"Error al procesar el archivo: {str(e)}"}, status=500)
+            
+    return render(request, "carga/upload.html")

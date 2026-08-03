@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#2C2C2A">
+    <title>Carga de Datos · IA-NAMI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rojo: #B66666;
+            --arena: #BDB58D;
+            --verde: #778E88;
+            --crema: #E5E2D3;
+            --gris: #808080;
+            --blanco: #FAFAF8;
+            --gris-oscuro: #4A4A48;
+            --texto: #2C2C2A;
+            --fondo: #F2F0E8;
+            --fondo-card: #FAFAF8;
+            --borde: #D6D2C0;
+            --sombra: rgba(44, 44, 42, 0.08);
+            --sombra-med: rgba(44, 44, 42, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--fondo);
+            color: var(--texto);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--texto);
+            border-bottom: 2px solid var(--rojo);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            height: 56px;
+        }
+
+        .header-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 3px;
+            color: var(--crema);
+            line-height: 1;
+        }
+
+        .header-logo span {
+            color: var(--rojo);
+        }
+
+        .nav-link {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--arena);
+            text-decoration: none;
+            border: 1px solid var(--arena);
+            padding: 6px 14px;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: var(--arena);
+            color: var(--texto);
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .upload-card {
+            width: 100%;
+            max-width: 500px;
+            background: var(--fondo-card);
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px var(--sombra);
+            padding: 32px;
+            position: relative;
+        }
+
+        .upload-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--rojo), var(--arena), var(--verde));
+        }
+
+        .title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            color: var(--texto);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--gris);
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--gris-oscuro);
+            margin-bottom: 8px;
+        }
+
+        .form-select {
+            width: 100%;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 10px 14px;
+            border: 1px solid var(--borde);
+            border-radius: 4px;
+            background: var(--fondo);
+            color: var(--texto);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .dropzone {
+            border: 2px dashed var(--borde);
+            border-radius: 6px;
+            padding: 32px 20px;
+            text-align: center;
+            background: var(--fondo);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--verde);
+            background: rgba(119, 142, 136, 0.05);
+        }
+
+        .dropzone-text {
+            font-size: 12px;
+            color: var(--gris-oscuro);
+            font-weight: 500;
+        }
+
+        .file-input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .selected-file {
+            margin-top: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--verde);
+            display: none;
+        }
+
+        .progress-container {
+            margin-top: 24px;
+            display: none;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 6px;
+            background: var(--fondo);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--verde);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-status {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--gris-oscuro);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-upload {
+            width: 100%;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            background: var(--rojo);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(182, 102, 102, 0.2);
+        }
+
+        .btn-upload:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: none;
+        }
+
+        .alert-success {
+            background: rgba(119, 142, 136, 0.15);
+            border: 1px solid var(--verde);
+            color: var(--verde);
+        }
+
+        .alert-error {
+            background: rgba(182, 102, 102, 0.15);
+            border: 1px solid var(--rojo);
+            color: var(--rojo);
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-logo">Ecosistema de Inteligencia Migratoria <span>·</span> IA-NAMI</div>
+    <a href="/inteligencia/" class="nav-link">Ver Dashboard</a>
+</header>
+
+<div class="container">
+    <div class="upload-card">
+        <h1 class="title">Carga de Datos Históricos</h1>
+        <p class="subtitle">Seleccione el tipo de archivo e importe registros de forma masiva (procesados por lotes de 3,000 en 3,000).</p>
+
+        <form id="upload-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="model_type" class="form-label">Tipo de Estructura / Modelo</label>
+                <select name="model_type" id="model_type" class="form-select" required>
+                    <option value="nacionalidades">Catálogo de Nacionalidades (Excel: Nacionalidades-Paises.xlsx)</option>
+                    <option value="rescatados">Rescatados (Rescatados.csv)</option>
+                    <option value="presentados">Presentados (Presentados.csv)</option>
+                    <option value="canalizados_adultos">Canalizados Adultos (Canalizados_Adultos.csv)</option>
+                    <option value="canalizados_nna">Canalizados NNA (Canalizados_NNA.csv)</option>
+                    <option value="internaciones">Internaciones (Internaciones.csv)</option>
+                    <option value="inadmisiones">Inadmisiones (Inadmisiones.csv)</option>
+                    <option value="condicion_estancia">Condición de Estancia (Condicion_de_Estancia.csv)</option>
+                    <option value="motivo_estancia">Motivo de Estancia (Motivo_de_Estancia.csv)</option>
+                    <option value="encuentros">Encuentros CBP/USBP (Encuentros.csv)</option>
+                    <option value="extranjeros_recibidos">Extranjeros Recibidos (Extranjeros_recibidos.csv)</option>
+                    <option value="mexicanos_recibidos">Mexicanos Recibidos (Mexicanos_Recibidos.csv)</option>
+                    <option value="retornados">Retornados (Retornados.csv)</option>
+                    <option value="traslados">Traslados (Traslados.csv)</option>
+                    <option value="caravanas">Caravanas (Caravanas_2019_2026.csv)</option>
+                    <option value="actas_civil">Actas de Registro Civil (DIAGNOSTICO Actas Civil.xlsx)</option>
+                    <option value="tramites_migratorios">Trámites Migratorios (Trámites Migratorios Indicadores.xlsx)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Seleccionar Archivo (CSV o Excel)</label>
+                <div class="dropzone" id="dropzone">
+                    <span class="dropzone-text">Arrastre su archivo aquí o haga clic para examinar</span>
+                    <input type="file" name="file" id="file" class="file-input" accept=".csv, .xlsx, .xls" required>
+                </div>
+                <div class="selected-file" id="selected-file"></div>
+            </div>
+
+            <button type="submit" class="btn-upload" id="submit-btn">Comenzar Carga</button>
+        </form>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progress-bar"></div>
+            </div>
+            <div class="progress-status">
+                <span id="progress-text">Procesando archivo...</span>
+                <span id="progress-pct">0%</span>
+            </div>
+        </div>
+
+        <div class="alert alert-success" id="success-alert"></div>
+        <div class="alert alert-error" id="error-alert"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+    const fileInput = document.getElementById('file');
+    const dropzone = document.getElementById('dropzone');
+    const selectedFile = document.getElementById('selected-file');
+    const form = document.getElementById('upload-form');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const progressPct = document.getElementById('progress-pct');
+    const successAlert = document.getElementById('success-alert');
+    const errorAlert = document.getElementById('error-alert');
+    const submitBtn = document.getElementById('submit-btn');
+
+    fileInput.addEventListener('change', (e) => {
+        if (fileInput.files.length > 0) {
+            selectedFile.textContent = `Archivo seleccionado: ${fileInput.files[0].name}`;
+            selectedFile.style.display = 'block';
+        }
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+        }, false);
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        successAlert.style.display = 'none';
+        errorAlert.style.display = 'none';
+        progressContainer.style.display = 'block';
+        submitBtn.disabled = true;
+        progressBar.style.width = '0%';
+        progressPct.textContent = '0%';
+        progressText.textContent = 'Leyendo y analizando archivo en el navegador...';
+
+        const file = fileInput.files[0];
+        const modelType = document.getElementById('model_type').value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        if (!file) {
+            errorAlert.textContent = 'Por favor seleccione un archivo.';
+            errorAlert.style.display = 'block';
+            submitBtn.disabled = false;
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = async function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                // Get the first worksheet
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Convert worksheet to JSON (array of objects)
+                // defval: "" ensures missing cells are populated with empty strings
+                // raw: false ensures cells are read as formatted strings (essential for dates/numbers)
+                let sheetOptions = { defval: "", raw: false };
+                if (modelType === 'actas_civil') {
+                    sheetOptions.range = 1;
+                }
+                const rawRows = XLSX.utils.sheet_to_json(worksheet, sheetOptions);
+                
+                if (rawRows.length === 0) {
+                    throw new Error("El archivo está vacío o no se pudo extraer ninguna fila.");
+                }
+
+                // Limpiar espacios extras, tabulaciones y saltos de línea (enters) de los datos
+                const rows = rawRows.map(row => {
+                    const cleanRow = {};
+                    for (const key in row) {
+                        if (Object.prototype.hasOwnProperty.call(row, key)) {
+                            const val = row[key];
+                            // Reemplaza múltiples espacios/enters/tabs con un solo espacio y hace trim
+                            cleanRow[key] = (typeof val === 'string') ? val.replace(/\s+/g, ' ').trim() : val;
+                        }
+                    }
+                    return cleanRow;
+                });
+
+                // Validador de columnas para evitar cargas erróneas
+                const fileHeaders = Object.keys(rows[0]).map(k => k.trim());
+                const REQUIRED_COLUMNS = {
+                    rescatados: ['EXTRANJEROS RESCATADOS POR EL INM'],
+                    presentados: ['ESTACIÓN O ESTANCIA MIGRATORIA', 'PRESENTADOS'],
+                    canalizados_adultos: ['APELLIDO (S)', 'NOMBRE (S)', 'MOTIVO DE SALIDA'],
+                    canalizados_nna: ['FECHA DE NACIMIENTO', 'CLASIFICACIÓN'],
+                    internaciones: ['TOTAL DE INGRESOS', 'INGRESOS AÉREOS', 'INGRESOS MARÍTIMOS', 'INGRESOS TERRESTRES'],
+                    inadmisiones: ['INADMITIDOS'],
+                    condicion_estancia: ['Documentos Migratorios', 'Tarjeta de Residente Permanente', 'Tarjeta de Residente Temporal'],
+                    motivo_estancia: ['Motivo de Estancia'],
+                    encuentros: ['Encuentro', 'Location', 'Ciudad EEUU'],
+                    extranjeros_recibidos: ['EXTRANJEROS RECIBIDOS DE EE.UU.'],
+                    mexicanos_recibidos: ['MEXICANOS REPATRIADOS', 'NNA NO ACOMPAÑADOS'],
+                    retornados: ['RETORNADOS A SU PAÍS', 'DEPORTADOS'],
+                    traslados: ['Baja California', 'Sonora', 'Chihuahua'],
+                    caravanas: ['Nombre de la Caravana'],
+                    actas_civil: ['FECHA DE SOLICITUD', 'OFICINA DE REPRESENTACIÓN', 'NACIONALIDAD DE LA (S) PERSONA (S) PROMOVENTE (S)'],
+                    tramites_migratorios: ['Fecha', 'Entidad Federativa', 'Oficina', 'Trámite', 'País / Empleador']
+                };
+
+                if (modelType === 'nacionalidades') {
+                    const structuralIndicators = ['TOTAL DE INGRESOS', 'INADMITIDOS', 'EXTRANJEROS RESCATADOS POR EL INM', 'PRESENTADOS', 'DIA'];
+                    const hasIndicators = structuralIndicators.some(col => fileHeaders.includes(col));
+                    if (hasIndicators) {
+                        throw new Error("El archivo seleccionado parece contener datos de estructura (como internaciones, inadmisiones o rescates) y no una lista de nacionalidades.");
+                    }
+                } else {
+                    const required = REQUIRED_COLUMNS[modelType] || [];
+                    const missing = required.filter(col => !fileHeaders.includes(col));
+                    if (missing.length > 0) {
+                        throw new Error(`El archivo seleccionado no corresponde al modelo '${modelType}'. Faltan las siguientes columnas requeridas: ${missing.join(', ')}`);
+                    }
+                }
+
+                // Using a chunk size of 3000 to ensure JSON payload size stays well below
+                // Django's default DATA_UPLOAD_MAX_MEMORY_SIZE limit (2.5MB).
+                const chunkSize = 3000;
+                const totalChunks = Math.ceil(rows.length / chunkSize);
+                
+                progressText.textContent = `Archivo cargado. Preparando ${totalChunks} fragmento(s)...`;
+                
+                let processedRowsCount = 0;
+
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * chunkSize;
+                    const end = start + chunkSize;
+                    const chunk = rows.slice(start, end);
+                    
+                    const chunkNum = i + 1;
+                    progressText.textContent = `Subiendo fragmento ${chunkNum} de ${totalChunks} (filas ${start + 2} - ${Math.min(end + 1, rows.length + 1)})...`;
+                    
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({
+                            model_type: modelType,
+                            rows: chunk
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok || result.status === 'error') {
+                        // Calculate absolute row number if row_index is provided
+                        let detailMessage = result.message || 'Error desconocido';
+                        if (result.row_index !== undefined) {
+                            // start is the offset, result.row_index is 0-based index in the chunk,
+                            // +2 accounts for the header row and 1-based indexing in Excel
+                            const absoluteExcelRow = start + result.row_index + 2;
+                            detailMessage = `Error en la fila ${absoluteExcelRow} (en el fragmento ${chunkNum} de ${totalChunks}): ${result.message}`;
+                        } else {
+                            detailMessage = `Error en el fragmento ${chunkNum} de ${totalChunks}: ${detailMessage}`;
+                        }
+                        throw new Error(detailMessage);
+                    }
+
+                    // Success chunk upload, update progress
+                    processedRowsCount += chunk.length;
+                    const percentComplete = Math.round((chunkNum / totalChunks) * 100);
+                    progressBar.style.width = `${percentComplete}%`;
+                    progressPct.textContent = `${percentComplete}%`;
+                }
+
+                // If finished all successfully
+                progressBar.style.width = '100%';
+                progressPct.textContent = '100%';
+                progressText.textContent = '¡Carga completada con éxito!';
+                successAlert.textContent = `¡Carga exitosa! Se procesaron ${rows.length} filas totales en ${totalChunks} fragmento(s).`;
+                successAlert.style.display = 'block';
+
+            } catch (err) {
+                errorAlert.textContent = err.message;
+                errorAlert.style.display = 'block';
+                progressContainer.style.display = 'none';
+            } finally {
+                submitBtn.disabled = false;
+            }
+        };
+
+        reader.onerror = function() {
+            errorAlert.textContent = 'Error al leer el archivo en el navegador.';
+            errorAlert.style.display = 'block';
+            progressContainer.style.display = 'none';
+            submitBtn.disabled = false;
+        };
+
+        reader.readAsArrayBuffer(file);
+    });
+</script>
+
+</body>
+</html>
