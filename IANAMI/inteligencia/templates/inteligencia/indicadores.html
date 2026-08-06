@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <style>
       :root {
         --rojo: #b66666;
@@ -617,7 +618,7 @@
         <!-- SUBSECTION: REGULACIÓN -->
         <section class="section active" id="sub-regulacion">
           <div class="section-header">
-            <h2>Gestión y Regulación Migratoria</h2>
+            <h2>Regulación y Archivo Migratorio</h2>
             <span class="section-badge">Diagnósticos de Validación y Operación de Trámites</span>
           </div>
 
@@ -627,7 +628,7 @@
               Diagnóstico de Validación de Actas (Registro Civil)
             </button>
             <button class="sub-nav-btn" id="btn-sub-tramites" onclick="showRegulacionSub('tramites')">
-              Diagnóstico de Trámites
+              Diagnóstico de Trámites de Regulación
             </button>
           </div>
 
@@ -807,73 +808,128 @@
         <!-- SUBSECTION: CONTROL -->
         <section class="section" id="sub-control">
           <div class="section-header">
-            <h2>Control y Supervisión Migratoria</h2>
-            <span class="section-badge">Encuentros · Retornos · Inadmisiones</span>
+            <h2>Control y Verificación Migratoria</h2>
+            <span class="section-badge">Diagnósticos de Validación y Operación de Control</span>
           </div>
 
-          <div class="grid">
-            <div class="card">
-              <div class="card-title">Encuentros Detectados</div>
-              <div class="kpi-container">
-                <div class="kpi-block">
-                  <div class="kpi-label">Este Mes</div>
-                  <div class="kpi-value rojo">34,510</div>
+          <!-- Sub-navigation tabs -->
+          <div class="sub-nav-container">
+            <button class="sub-nav-btn active" id="btn-sub-control-diagnostico1" onclick="showControlSub('diagnostico1')">
+              Ingresos y 2da Revisión
+            </button>
+            <button class="sub-nav-btn" id="btn-sub-control-diagnostico2" onclick="showControlSub('diagnostico2')">
+              Diagnóstico de Control 2
+            </button>
+          </div>
+
+          <!-- SUB-CONTENT 1: Diagnóstico de Control 1 -->
+          <div id="control-diagnostico1-content" class="control-sub-content">
+
+            <!-- PANEL 1: Hallazgos Relevantes (Acompañamiento a la Revisión Migratoria) -->
+            <div class="panel-card" style="margin-bottom: 24px;">
+              <div class="panel-header">Hallazgos Relevantes · Ingresos</div>
+              <div class="panel-body">
+                <div class="bullets-container" id="bullets-control-chart1">
+                  <ul>
+                    <li>El <strong class="highlight-green" id="c1-ctrl-top5-pct">0%</strong> de los ingresos aéreos se concentran en 5 aeropuertos principales: <span id="c1-ctrl-top5-list">Cargando...</span></li>
+                    <li><span class="highlight-red" id="c1-ctrl-bullet-trend">Tendencia de ...</span> total de ingresos (de <span id="c1-ctrl-prev">0</span> a <span id="c1-ctrl-curr">0</span>).</li>
+                  </ul>
                 </div>
-                <div class="kpi-block">
-                  <div class="kpi-label">Mes Anterior</div>
-                  <div class="kpi-value arena">31,200</div>
-                </div>
-              </div>
-              <div class="bar-list">
-                <div class="bar-row">
-                  <span class="bar-label">Frontera Norte</span>
-                  <div class="bar-track"><div class="bar-fill rojo" style="width: 85%;"></div></div>
-                  <span class="bar-value">85%</span>
-                </div>
-                <div class="bar-row">
-                  <span class="bar-label">Frontera Sur</span>
-                  <div class="bar-track"><div class="bar-fill arena" style="width: 55%;"></div></div>
-                  <span class="bar-value">55%</span>
+                <div class="chart-container-wrapper">
+                  <div class="trend-indicator" id="c1-ctrl-trend-indicator">
+                    <span id="c1-ctrl-trend-val">0%</span>
+                    <span class="trend-arrow" id="c1-ctrl-trend-arrow">➔</span>
+                  </div>
+                  <canvas id="chart-control-1"></canvas>
                 </div>
               </div>
             </div>
 
-            <div class="card">
-              <div class="card-title">Retornos y Deportaciones</div>
-              <div class="bar-list" style="margin-top: 10px;">
-                <div class="bar-row">
-                  <span class="bar-label">Asistidos</span>
-                  <div class="bar-track"><div class="bar-fill verde" style="width: 72%;"></div></div>
-                  <span class="bar-value">12,450</span>
+            <!-- PANEL 2: Hallazgos Relevantes · Segunda Revisión Migratoria -->
+            <div class="panel-card" style="margin-bottom: 24px;">
+              <div class="panel-header">Hallazgos Relevantes · Acompañamiento a la Segunda Revisión Migratoria</div>
+              <div class="panel-body">
+                <div class="bullets-container" id="bullets-control-chart2">
+                  <ul>
+                    <li>El <strong class="highlight-green" id="c2-ctrl-top5-pct">0%</strong> de las determinaciones en 2da revisión se concentran en 5 puntos principales: <span id="c2-ctrl-top5-list">Cargando...</span></li>
+                    <li><span class="highlight-red" id="c2-ctrl-bullet-trend">Tendencia de ...</span> total de determinaciones (de <span id="c2-ctrl-prev">0</span> a <span id="c2-ctrl-curr">0</span>).</li>
+                  </ul>
                 </div>
-                <div class="bar-row">
-                  <span class="bar-label">Deportados</span>
-                  <div class="bar-track"><div class="bar-fill rojo" style="width: 45%;"></div></div>
-                  <span class="bar-value">7,810</span>
-                </div>
-                <div class="bar-row">
-                  <span class="bar-label">Inadmisiones</span>
-                  <div class="bar-track"><div class="bar-fill arena" style="width: 25%;"></div></div>
-                  <span class="bar-value">4,200</span>
+                <div class="chart-container-wrapper">
+                  <div class="trend-indicator" id="c2-ctrl-trend-indicator">
+                    <span id="c2-ctrl-trend-val">0%</span>
+                    <span class="trend-arrow" id="c2-ctrl-trend-arrow">➔</span>
+                  </div>
+                  <canvas id="chart-control-2"></canvas>
                 </div>
               </div>
             </div>
 
-            <div class="card">
-              <div class="card-title">Puntos de Control Estratégicos</div>
-              <div class="kpi-container">
-                <div class="kpi-block">
-                  <div class="kpi-label">Activos</div>
-                  <div class="kpi-value verde">48 Puntos</div>
-                </div>
-                <div class="kpi-block">
-                  <div class="kpi-label">Alertas</div>
-                  <div class="kpi-value rojo">3 Alta</div>
+          </div><!-- End of control-diagnostico1-content -->
+
+          <!-- SUB-CONTENT 2: Diagnóstico de Control 2 -->
+          <div id="control-diagnostico2-content" class="control-sub-content" style="display: none;">
+            <!-- Filter Dropdown Select -->
+            <div style="background: var(--nav-bg); border: 1px solid var(--borde); border-radius: 6px; padding: 15px; margin-bottom: 24px; display: flex; align-items: center; gap: 15px;">
+              <label style="color: var(--oro); font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Seleccionar Indicador de Control:</label>
+              <select id="select-control-opcion" style="flex: 1; max-width: 600px; background: #fff; border: 1px solid var(--borde); border-radius: 4px; padding: 8px 12px; font-family: 'DM Sans', sans-serif; font-size: 12px; color: #333; font-weight: 600; cursor: pointer;">
+                <option value="">-- Seleccionar Opción --</option>
+              </select>
+            </div>
+
+            <!-- 4 Charts Grid -->
+            <div class="panels-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 24px;">
+              <!-- INDICADOR 1 -->
+              <div class="panel-card">
+                <div class="panel-header">INDICADOR 1: CONTROL</div>
+                <div class="panel-body">
+                  <div class="tramite-title-banner" id="banner-control-1">Indicador 1</div>
+                  <div class="chart-container-wrapper" style="position: relative; min-height: 380px;">
+                    <div class="chart-trends-floating" id="trends-control-1"></div>
+                    <canvas id="chart-control-grid-1"></canvas>
+                  </div>
+                  <div class="tramite-legend" id="legend-control-1"></div>
                 </div>
               </div>
-              <p style="font-size: 11px; color: var(--gris); line-height: 1.5; margin-top: 10px;">
-                Supervisión activa en aeropuertos, puertos marítimos y filtros fronterizos terrestres.
-              </p>
+
+              <!-- INDICADOR 2 -->
+              <div class="panel-card">
+                <div class="panel-header">INDICADOR 2: CONTROL</div>
+                <div class="panel-body">
+                  <div class="tramite-title-banner" id="banner-control-2">Indicador 2</div>
+                  <div class="chart-container-wrapper" style="position: relative; min-height: 380px;">
+                    <div class="chart-trends-floating" id="trends-control-2"></div>
+                    <canvas id="chart-control-grid-2"></canvas>
+                  </div>
+                  <div class="tramite-legend" id="legend-control-2"></div>
+                </div>
+              </div>
+
+              <!-- INDICADOR 3 -->
+              <div class="panel-card">
+                <div class="panel-header">INDICADOR 3: CONTROL</div>
+                <div class="panel-body">
+                  <div class="tramite-title-banner" id="banner-control-3">Indicador 3</div>
+                  <div class="chart-container-wrapper" style="position: relative; min-height: 380px;">
+                    <div class="chart-trends-floating" id="trends-control-3"></div>
+                    <canvas id="chart-control-grid-3"></canvas>
+                  </div>
+                  <div class="tramite-legend" id="legend-control-3"></div>
+                </div>
+              </div>
+
+              <!-- INDICADOR 4 -->
+              <div class="panel-card">
+                <div class="panel-header">INDICADOR 4: CONTROL</div>
+                <div class="panel-body">
+                  <div class="tramite-title-banner" id="banner-control-4">Indicador 4</div>
+                  <div class="chart-container-wrapper" style="position: relative; min-height: 380px;">
+                    <div class="chart-trends-floating" id="trends-control-4"></div>
+                    <canvas id="chart-control-grid-4"></canvas>
+                  </div>
+                  <div class="tramite-legend" id="legend-control-4"></div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -959,6 +1015,8 @@
       let topStatesNacChart = null;
       let piePrevChart = null;
       let pieCurrChart = null;
+      let controlChart1 = null;
+      let controlChart2 = null;
 
       function showSubsection(sub) {
         // Remove active class from all sections
@@ -980,9 +1038,11 @@
         // Add active class to clicked button
         event.currentTarget.classList.add("active");
 
-        // Load data if Regulation is active
+        // Load data depending on active subsection
         if (sub === 'regulacion') {
           loadRegulacionData();
+        } else if (sub === 'control') {
+          loadControlData();
         }
       }
 
@@ -990,7 +1050,7 @@
         document.querySelectorAll(".regulacion-sub-content").forEach(el => {
           el.style.display = 'none';
         });
-        document.querySelectorAll(".sub-nav-btn").forEach(btn => {
+        document.querySelectorAll("#sub-regulacion .sub-nav-btn").forEach(btn => {
           btn.classList.remove('active');
         });
         const target = document.getElementById(`regulacion-${subType}-content`);
@@ -1003,6 +1063,23 @@
         }
         if (subType === 'tramites') {
           loadTramitesList();
+        }
+      }
+
+      function showControlSub(subType) {
+        document.querySelectorAll(".control-sub-content").forEach(el => {
+          el.style.display = 'none';
+        });
+        document.querySelectorAll("#sub-control .sub-nav-btn").forEach(btn => {
+          btn.classList.remove('active');
+        });
+        const target = document.getElementById(`control-${subType}-content`);
+        if (target) {
+          target.style.display = 'block';
+        }
+        const btn = document.getElementById(`btn-sub-control-${subType}`);
+        if (btn) {
+          btn.classList.add('active');
         }
       }
 
@@ -1119,14 +1196,439 @@
         }
       }
 
+      async function loadControlData() {
+        try {
+          const response = await fetch('/indicadores/control/data/');
+          const data = await response.json();
+          if (data.status === 'success') {
+            renderControlChart1(data);
+            updateControlBullets(data);
+
+            if (data.inadmision2da) {
+              renderControlChart2(data.inadmision2da);
+              updateControlBullets2(data.inadmision2da);
+            }
+          }
+        } catch (error) {
+          console.error("Error al cargar los datos de control:", error);
+        }
+      }
+
+      function updateControlBullets(data) {
+        const sum = data.summary;
+        
+        // Top 5 airports concentration & list
+        const top5PctEl = document.getElementById('c1-ctrl-top5-pct');
+        if (top5PctEl) top5PctEl.textContent = data.concentration_pct + "%";
+        
+        const top5ListEl = document.getElementById('c1-ctrl-top5-list');
+        if (top5ListEl && data.top5_airports && data.top5_airports.length > 0) {
+          const formattedItems = data.top5_airports.map((ap, idx) => {
+            return `<strong>${idx + 1}. ${ap.name}</strong> (${ap.pct}%)`;
+          });
+          top5ListEl.innerHTML = formattedItems.join(', ');
+        }
+
+        // Trend percentage
+        const trendEl = document.getElementById('c1-ctrl-bullet-trend');
+        const changeVal = data.pct_change_total;
+        if (trendEl) {
+          if (changeVal >= 0) {
+            trendEl.textContent = `Incremento del +${changeVal}%`;
+            trendEl.className = 'highlight-green';
+          } else {
+            trendEl.textContent = `Decremento del ${changeVal}%`;
+            trendEl.className = 'highlight-red';
+          }
+        }
+
+        const prevEl = document.getElementById('c1-ctrl-prev');
+        const currEl = document.getElementById('c1-ctrl-curr');
+        if (prevEl) prevEl.textContent = sum.prev_total ? sum.prev_total.toLocaleString() : '0';
+        if (currEl) currEl.textContent = sum.last_total ? sum.last_total.toLocaleString() : '0';
+
+        // Trend indicator pill
+        const ctrlTrendVal = document.getElementById('c1-ctrl-trend-val');
+        const ctrlTrendArrow = document.getElementById('c1-ctrl-trend-arrow');
+        if (ctrlTrendVal && ctrlTrendArrow) {
+          ctrlTrendVal.textContent = (changeVal >= 0 ? '+' : '') + changeVal + '%';
+          if (changeVal >= 0) {
+            ctrlTrendVal.style.color = 'var(--verde)';
+            ctrlTrendArrow.className = 'trend-arrow up';
+            ctrlTrendArrow.style.color = 'var(--verde)';
+          } else {
+            ctrlTrendVal.style.color = 'var(--rojo)';
+            ctrlTrendArrow.className = 'trend-arrow';
+            ctrlTrendArrow.style.color = 'var(--rojo)';
+          }
+        }
+      }
+
+      function renderControlChart1(data) {
+        const canvasEl = document.getElementById('chart-control-1');
+        if (!canvasEl) return;
+        const ctx = canvasEl.getContext('2d');
+        if (controlChart1) {
+          controlChart1.destroy();
+        }
+
+        const controlTotalLabelsPlugin = {
+          id: 'controlTotalLabelsPlugin',
+          afterDatasetsDraw(chart) {
+            if (window.ChartDataLabels && chart.options.plugins && chart.options.plugins.datalabels && chart.options.plugins.datalabels.display !== false) {
+              return;
+            }
+            const { ctx } = chart;
+            ctx.save();
+            ctx.font = 'bold 11px "DM Sans", sans-serif';
+            ctx.fillStyle = '#b66666';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            const totalMetaIndex = chart.data.datasets.findIndex(ds => ds.label === 'TOTAL');
+            if (totalMetaIndex === -1) {
+              ctx.restore();
+              return;
+            }
+
+            const meta = chart.getDatasetMeta(totalMetaIndex);
+            if (!meta || meta.hidden) {
+              ctx.restore();
+              return;
+            }
+
+            meta.data.forEach((point, index) => {
+              const val = chart.data.datasets[totalMetaIndex].data[index];
+              if (val !== undefined && val !== null) {
+                ctx.fillText(val.toLocaleString(), point.x, point.y - 6);
+              }
+            });
+            ctx.restore();
+          }
+        };
+
+        controlChart1 = new Chart(ctx, {
+          type: 'line',
+          plugins: [controlTotalLabelsPlugin],
+          data: {
+            labels: data.labels,
+            datasets: [
+              {
+                label: 'AÉREO',
+                data: data.aereos,
+                borderColor: '#778e88', // Verde/Teal
+                backgroundColor: '#778e88',
+                borderWidth: 2,
+                pointStyle: 'rect',
+                pointRadius: 5,
+                tension: 0.1,
+                fill: false,
+                datalabels: { display: false }
+              },
+              {
+                label: 'TERRESTRE',
+                data: data.terrestres,
+                borderColor: '#bdb58d', // Arena
+                backgroundColor: '#bdb58d',
+                borderWidth: 2,
+                pointStyle: 'circle',
+                pointRadius: 5,
+                tension: 0.1,
+                fill: false,
+                datalabels: { display: false }
+              },
+              {
+                label: 'MARÍTIMO',
+                data: data.maritimos,
+                borderColor: '#295f8a', // Azul
+                backgroundColor: '#295f8a',
+                borderWidth: 2,
+                pointStyle: 'star',
+                pointRadius: 5,
+                tension: 0.1,
+                fill: false,
+                datalabels: { display: false }
+              },
+              {
+                label: 'TOTAL',
+                data: data.totales,
+                borderColor: '#b66666', // Rojo
+                backgroundColor: '#b66666',
+                borderWidth: 3,
+                pointStyle: 'triangle',
+                pointRadius: 6,
+                tension: 0.1,
+                fill: false,
+                datalabels: {
+                  display: true,
+                  align: 'top',
+                  anchor: 'end',
+                  offset: 4,
+                  color: '#b66666',
+                  font: {
+                    family: 'DM Sans',
+                    size: 11,
+                    weight: 'bold'
+                  },
+                  formatter: function(value) {
+                    return value ? value.toLocaleString() : value;
+                  }
+                }
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 28
+              }
+            },
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  font: { family: 'DM Sans', size: 10, weight: 600 }
+                }
+              },
+              datalabels: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(0,0,0,0.05)' }
+              },
+              x: {
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      }
+
+      function updateControlBullets2(inadData) {
+        const sum = inadData.summary;
+        
+        const top5PctEl = document.getElementById('c2-ctrl-top5-pct');
+        if (top5PctEl) top5PctEl.textContent = inadData.concentration_pct + "%";
+        
+        const top5ListEl = document.getElementById('c2-ctrl-top5-list');
+        if (top5ListEl && inadData.top5_points && inadData.top5_points.length > 0) {
+          const formattedItems = inadData.top5_points.map((pt, idx) => {
+            return `<strong>${idx + 1}. ${pt.name}</strong> (${pt.pct}%)`;
+          });
+          top5ListEl.innerHTML = formattedItems.join(', ');
+        }
+
+        const trendEl = document.getElementById('c2-ctrl-bullet-trend');
+        const changeVal = inadData.pct_change_total;
+        if (trendEl) {
+          if (changeVal >= 0) {
+            trendEl.textContent = `Incremento del +${changeVal}%`;
+            trendEl.className = 'highlight-green';
+          } else {
+            trendEl.textContent = `Decremento del ${changeVal}%`;
+            trendEl.className = 'highlight-red';
+          }
+        }
+
+        const prevEl = document.getElementById('c2-ctrl-prev');
+        const currEl = document.getElementById('c2-ctrl-curr');
+        if (prevEl) prevEl.textContent = sum.prev_total ? sum.prev_total.toLocaleString() : '0';
+        if (currEl) currEl.textContent = sum.last_total ? sum.last_total.toLocaleString() : '0';
+
+        const ctrlTrendVal = document.getElementById('c2-ctrl-trend-val');
+        const ctrlTrendArrow = document.getElementById('c2-ctrl-trend-arrow');
+        if (ctrlTrendVal && ctrlTrendArrow) {
+          ctrlTrendVal.textContent = (changeVal >= 0 ? '+' : '') + changeVal + '%';
+          if (changeVal >= 0) {
+            ctrlTrendVal.style.color = 'var(--verde)';
+            ctrlTrendArrow.className = 'trend-arrow up';
+            ctrlTrendArrow.style.color = 'var(--verde)';
+          } else {
+            ctrlTrendVal.style.color = 'var(--rojo)';
+            ctrlTrendArrow.className = 'trend-arrow';
+            ctrlTrendArrow.style.color = 'var(--rojo)';
+          }
+        }
+      }
+
+      function renderControlChart2(inadData) {
+        const canvasEl = document.getElementById('chart-control-2');
+        if (!canvasEl) return;
+        const ctx = canvasEl.getContext('2d');
+        if (controlChart2) {
+          controlChart2.destroy();
+        }
+
+        const control2TotalLabelsPlugin = {
+          id: 'control2TotalLabelsPlugin',
+          afterDatasetsDraw(chart) {
+            if (window.ChartDataLabels && chart.options.plugins && chart.options.plugins.datalabels && chart.options.plugins.datalabels.display !== false) {
+              return;
+            }
+            const { ctx } = chart;
+            ctx.save();
+            ctx.font = 'bold 11px "DM Sans", sans-serif';
+            ctx.fillStyle = '#b66666';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            const totalMetaIndex = chart.data.datasets.findIndex(ds => ds.label === 'TOTAL');
+            if (totalMetaIndex === -1) {
+              ctx.restore();
+              return;
+            }
+
+            const meta = chart.getDatasetMeta(totalMetaIndex);
+            if (!meta || meta.hidden) {
+              ctx.restore();
+              return;
+            }
+
+            meta.data.forEach((point, index) => {
+              const val = chart.data.datasets[totalMetaIndex].data[index];
+              if (val !== undefined && val !== null) {
+                ctx.fillText(val.toLocaleString(), point.x, point.y - 6);
+              }
+            });
+            ctx.restore();
+          }
+        };
+
+        controlChart2 = new Chart(ctx, {
+          type: 'line',
+          plugins: [control2TotalLabelsPlugin],
+          data: {
+            labels: inadData.labels,
+            datasets: [
+              {
+                label: 'RECHAZOS',
+                data: inadData.rechazos,
+                borderColor: '#b66666', // Rojo
+                backgroundColor: '#b66666',
+                borderWidth: 2,
+                pointStyle: 'circle',
+                pointRadius: 5,
+                tension: 0.1,
+                fill: false,
+                datalabels: { display: false }
+              },
+              {
+                label: 'INTERNACIONES',
+                data: inadData.internaciones,
+                borderColor: '#778e88', // Verde/Teal
+                backgroundColor: '#778e88',
+                borderWidth: 2,
+                pointStyle: 'rect',
+                pointRadius: 5,
+                tension: 0.1,
+                fill: false,
+                datalabels: { display: false }
+              },
+              {
+                label: 'TOTAL',
+                data: inadData.totales,
+                borderColor: '#4a4a48', // Gris oscuro
+                backgroundColor: '#4a4a48',
+                borderWidth: 3,
+                pointStyle: 'triangle',
+                pointRadius: 6,
+                tension: 0.1,
+                fill: false,
+                datalabels: {
+                  display: true,
+                  align: 'top',
+                  anchor: 'end',
+                  offset: 4,
+                  color: '#b66666',
+                  font: {
+                    family: 'DM Sans',
+                    size: 11,
+                    weight: 'bold'
+                  },
+                  formatter: function(value) {
+                    return value ? value.toLocaleString() : value;
+                  }
+                }
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 28
+              }
+            },
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  font: { family: 'DM Sans', size: 10, weight: 600 }
+                }
+              },
+              datalabels: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(0,0,0,0.05)' }
+              },
+              x: {
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      }
+
       function renderCharts(data) {
-        // CHART 1: SOLICITUDES
+        // CHART 1: SOLICITUDES (Hallazgos Relevantes)
         const ctx1 = document.getElementById('chart-solicitudes').getContext('2d');
         if (solicitudesChart) {
           solicitudesChart.destroy();
         }
+        
+        // Plugin fallback in case ChartDataLabels is disabled or not loaded
+        const totalLabelsPlugin = {
+          id: 'totalLabelsPlugin',
+          afterDatasetsDraw(chart) {
+            if (window.ChartDataLabels && chart.options.plugins && chart.options.plugins.datalabels && chart.options.plugins.datalabels.display !== false) {
+              // ChartDataLabels plugin will handle it
+              return;
+            }
+            const { ctx } = chart;
+            ctx.save();
+            ctx.font = 'bold 10px "DM Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            chart.data.datasets.forEach((dataset, dsIdx) => {
+              const meta = chart.getDatasetMeta(dsIdx);
+              if (!meta || meta.hidden) return;
+
+              ctx.fillStyle = dataset.borderColor || '#333';
+              meta.data.forEach((point, index) => {
+                const val = dataset.data[index];
+                if (val !== undefined && val !== null) {
+                  ctx.fillText(val, point.x, point.y - 5);
+                }
+              });
+            });
+            ctx.restore();
+          }
+        };
+
         solicitudesChart = new Chart(ctx1, {
           type: 'line',
+          plugins: [totalLabelsPlugin],
           data: {
             labels: data.labels,
             datasets: [
@@ -1139,7 +1641,22 @@
                 pointStyle: 'circle',
                 pointRadius: 5,
                 tension: 0.1,
-                fill: false
+                fill: false,
+                datalabels: {
+                  display: true,
+                  align: 'top',
+                  anchor: 'end',
+                  offset: 4,
+                  color: '#8a7c5a',
+                  font: {
+                    family: 'DM Sans',
+                    size: 10,
+                    weight: 'bold'
+                  },
+                  formatter: function(value) {
+                    return value;
+                  }
+                }
               },
               {
                 label: 'NACIMIENTO',
@@ -1150,7 +1667,22 @@
                 pointStyle: 'rect',
                 pointRadius: 5,
                 tension: 0.1,
-                fill: false
+                fill: false,
+                datalabels: {
+                  display: true,
+                  align: 'top',
+                  anchor: 'end',
+                  offset: 4,
+                  color: '#104e3b',
+                  font: {
+                    family: 'DM Sans',
+                    size: 10,
+                    weight: 'bold'
+                  },
+                  formatter: function(value) {
+                    return value;
+                  }
+                }
               },
               {
                 label: 'TOTAL',
@@ -1161,19 +1693,42 @@
                 pointStyle: 'triangle',
                 pointRadius: 6,
                 tension: 0.1,
-                fill: false
+                fill: false,
+                datalabels: {
+                  display: true,
+                  align: 'top',
+                  anchor: 'end',
+                  offset: 4,
+                  color: '#b66666',
+                  font: {
+                    family: 'DM Sans',
+                    size: 11,
+                    weight: 'bold'
+                  },
+                  formatter: function(value) {
+                    return value;
+                  }
+                }
               }
             ]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 24
+              }
+            },
             plugins: {
               legend: {
                 position: 'top',
                 labels: {
                   font: { family: 'DM Sans', size: 10, weight: 600 }
                 }
+              },
+              datalabels: {
+                display: false
               }
             },
             scales: {

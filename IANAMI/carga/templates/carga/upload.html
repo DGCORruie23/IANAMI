@@ -297,6 +297,8 @@
                     <option value="caravanas">Caravanas (Caravanas_2019_2026.csv)</option>
                     <option value="actas_civil">Actas de Registro Civil (DIAGNOSTICO Actas Civil.xlsx)</option>
                     <option value="tramites_migratorios">Trámites Migratorios (Trámites Migratorios Indicadores.xlsx)</option>
+                    <option value="inadmisiones2da">Inadmisiones 2da Revisión (Segunda REVISION OCT 2024 AL __.xlsx)</option>
+                    <option value="internaciones_n">Internaciones N (Ingresos OCT 2024__.xlsx)</option>
                 </select>
             </div>
 
@@ -439,7 +441,9 @@
                     traslados: ['Baja California', 'Sonora', 'Chihuahua'],
                     caravanas: ['Nombre de la Caravana'],
                     actas_civil: ['FECHA DE SOLICITUD', 'OFICINA DE REPRESENTACIÓN', 'NACIONALIDAD DE LA (S) PERSONA (S) PROMOVENTE (S)'],
-                    tramites_migratorios: ['Fecha', 'Entidad Federativa', 'Oficina', 'Trámite', 'País / Empleador']
+                    tramites_migratorios: ['Fecha', 'Entidad Federativa', 'Oficina', 'Trámite', 'País / Empleador'],
+                    inadmisiones2da: ['O.R.', 'TOTAL'],
+                    internaciones_n: ['O.R.', 'Total']
                 };
 
                 if (modelType === 'nacionalidades') {
@@ -506,6 +510,9 @@
                     const percentComplete = Math.round((chunkNum / totalChunks) * 100);
                     progressBar.style.width = `${percentComplete}%`;
                     progressPct.textContent = `${percentComplete}%`;
+
+                    // Small pause to allow DB background writer to flush WAL checkpoints cleanly
+                    await new Promise(r => setTimeout(r, 60));
                 }
 
                 // If finished all successfully

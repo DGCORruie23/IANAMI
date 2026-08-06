@@ -3,7 +3,7 @@ from .models import (
     Estado, EstadoOR, Nacionalidad, CanalizadoAdulto, CanalizadoNNA, CondicionEstancia,
     MotivoEstancia, Encuentro, ExtranjeroRecibido, Inadmision, Internacion,
     MexicanoRecibido, Presentado, Rescatado, Retornado, Traslado, Caravana, ActasCivil,
-    TramitesMigratorios
+    TramitesMigratorios, Inadmision2da, InternacionN, TipoIngresoP
 )
 
 @admin.register(Estado)
@@ -126,4 +126,23 @@ class TramitesMigratoriosAdmin(admin.ModelAdmin):
     list_filter = ('estado', 'nacionalidad', 'tramite')
     search_fields = ('oficina', 'tramite')
     date_hierarchy = 'fecha'
+
+@admin.register(TipoIngresoP)
+class TipoIngresoPAdmin(admin.ModelAdmin):
+    list_display = ('tipo',)
+    search_fields = ('tipo',)
+
+@admin.register(Inadmision2da)
+class Inadmision2daAdmin(admin.ModelAdmin):
+    list_display = ('dia', 'estado', 'puntoInternacion', 'determinacion', 'nacionalidad', 'total')
+    list_filter = ('estado', 'nacionalidad', 'determinacion')
+    search_fields = ('puntoInternacion', 'determinacion')
+    date_hierarchy = 'dia'
+
+@admin.register(InternacionN)
+class InternacionNAdmin(admin.ModelAdmin):
+    list_display = ('dia', 'estado', 'puntoInternacion', 'tipoIngreso', 'nacionalidad', 'total')
+    list_filter = ('estado', 'tipoIngreso', 'nacionalidad')
+    search_fields = ('puntoInternacion',)
+    date_hierarchy = 'dia'
 

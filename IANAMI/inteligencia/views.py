@@ -8,7 +8,8 @@ from datetime import date, timedelta
 from carga.models import (
     Rescatado, Presentado, CanalizadoAdulto, CanalizadoNNA, Retornado,
     MexicanoRecibido, ExtranjeroRecibido, Inadmision, Internacion,
-    Encuentro, CondicionEstancia, MotivoEstancia, Caravana, ActasCivil, TramitesMigratorios
+    Encuentro, CondicionEstancia, MotivoEstancia, Caravana, ActasCivil, TramitesMigratorios,
+    InternacionN
 )
 
 def format_month(dt):
@@ -617,6 +618,197 @@ def tramites_data_view(request):
         "concluidos": get_metric_data("concluidos"),
         "resueltos": get_metric_data("resueltos"),
         "proceso": get_metric_data("proceso")
+    }
+    return JsonResponse(data)
+
+
+@login_required
+def control_data_view(request):
+    from django.db.models import Q
+    from datetime import date
+
+    # Filter from Jan 1 2025 onwards
+    start_filter_date = date(2025, 1, 1)
+    qs_2025 = InternacionN.objects.filter(dia__gte=start_filter_date)
+
+    months_es = {
+        1: "Ene", 2: "Feb", 3: "Mar", 4: "Abr", 5: "May", 6: "Jun",
+        7: "Jul", 8: "Ago", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dic"
+    }
+
+    # Group by month
+    months_qs = (
+        qs_2025
+        .annotate(m=TruncMonth('dia'))
+        .values('m')
+        .annotate(
+            tot_sum=Sum('total'),
+            aereo_sum=Sum('total', filter=Q(tipoIngreso__tipo__icontains='AEREO')),
+            terr_sum=Sum('total', filter=Q(tipoIngreso__tipo__icontains='TERRESTRE')),
+            mar_sum=Sum('total', filter=Q(tipoIngreso__tipo__icontains='MARITIMO'))
+        )
+        .order_by('m')
+    )
+
+    labels = []
+    totales = []
+    aereos = []
+    terrestres = []
+    maritimos = []
+
+    for item in months_qs:
+        dt = item['m']
+        if dt:
+            lbl = f"{months_es[dt.month]} {dt.year}"
+            labels.append(lbl)
+            totales.append(item['tot_sum'] or 0)
+            aereos.append(item['aereo_sum'] or 0)
+            terrestres.append(item['terr_sum'] or 0)
+            maritimos.append(item['mar_sum'] or 0)
+
+    # Calculate percentage change for chart 1 total (last vs prev month)
+    pct_change_total = 0.0
+    if len(totales) >= 2 and totales[-2] > 0:
+        pct_change_total = ((totales[-1] - totales[-2]) / totales[-2]) * 100.0
+
+    # Top 5 Aéreo airports (puntos de internación aéreos)
+    aereo_qs = qs_2025.filter(tipoIngreso__tipo__icontains='AEREO')
+    tot_aereo = aereo_qs.aggregate(s=Sum('total'))['s'] or 1
+
+    map_ap = {}
+    for r in aereo_qs.values('puntoInternacion').annotate(t=Sum('total')):
+        name = r['puntoInternacion'] or 'DESCONOCIDO'
+        clean = name.upper()
+        if 'CANCUN' in clean:
+            key = 'AI Cancún'
+        elif 'CIUDAD DE MEXICO' in clean or 'MEXICO' in clean:
+            key = 'AICM'
+        elif 'GUADALAJARA' in clean:
+            key = 'AI Guadalajara'
+        elif 'LOS CABOS' in clean or 'CABOS' in clean:
+            key = 'AI Los Cabos'
+        elif 'PUERTO VALLARTA' in clean or 'VALLARTA' in clean:
+            key = 'AI Puerto Vallarta'
+        elif 'MONTERREY' in clean:
+            key = 'AI Monterrey'
+        else:
+            key = name.title()
+        map_ap[key] = map_ap.get(key, 0) + (r['t'] or 0)
+
+    sorted_ap = sorted(map_ap.items(), key=lambda x: x[1], reverse=True)[:5]
+    top5_sum = sum(x[1] for x in sorted_ap)
+    concentration_pct = round((top5_sum / tot_aereo) * 100, 2)
+
+    top5_formatted = []
+    for name, val in sorted_ap:
+        pct = round((val / tot_aereo) * 100, 2)
+        top5_formatted.append({
+            "name": name,
+            "count": val,
+            "pct": pct
+        })
+
+    last_total = totales[-1] if totales else 0
+    prev_total = totales[-2] if len(totales) >= 2 else 0
+
+    # Inadmision2da data (Jan 2025 onwards)
+    from carga.models import Inadmision2da
+    qs_inad2 = Inadmision2da.objects.filter(dia__gte=start_filter_date)
+
+    months_inad_qs = (
+        qs_inad2
+        .annotate(m=TruncMonth('dia'))
+        .values('m')
+        .annotate(
+            tot_sum=Sum('total'),
+            rechazo_sum=Sum('total', filter=Q(determinacion__icontains='RECHAZO')),
+            internacion_sum=Sum('total', filter=Q(determinacion__icontains='INTERNACION'))
+        )
+        .order_by('m')
+    )
+
+    inad_labels = []
+    inad_totales = []
+    inad_rechazos = []
+    inad_internaciones = []
+
+    for item in months_inad_qs:
+        dt = item['m']
+        if dt:
+            lbl = f"{months_es[dt.month]} {dt.year}"
+            inad_labels.append(lbl)
+            inad_totales.append(item['tot_sum'] or 0)
+            inad_rechazos.append(item['rechazo_sum'] or 0)
+            inad_internaciones.append(item['internacion_sum'] or 0)
+
+    pct_change_inad = 0.0
+    if len(inad_totales) >= 2 and inad_totales[-2] > 0:
+        pct_change_inad = ((inad_totales[-1] - inad_totales[-2]) / inad_totales[-2]) * 100.0
+
+    tot_g_inad = qs_inad2.aggregate(s=Sum('total'))['s'] or 1
+
+    map_ap_inad = {}
+    for r in qs_inad2.values('puntoInternacion').annotate(t=Sum('total')):
+        name = r['puntoInternacion'] or 'DESCONOCIDO'
+        clean = name.upper()
+        if 'CANCUN' in clean:
+            key = 'AI Cancún'
+        elif 'CIUDAD DE MEXICO' in clean or 'MEXICO' in clean:
+            key = 'AICM'
+        elif 'GUADALAJARA' in clean:
+            key = 'AI Guadalajara'
+        elif 'LOS CABOS' in clean or 'CABOS' in clean:
+            key = 'AI Los Cabos'
+        elif 'TIJUANA' in clean:
+            key = 'Tijuana (Puerta México)'
+        elif 'PUERTO VALLARTA' in clean or 'VALLARTA' in clean:
+            key = 'AI Puerto Vallarta'
+        else:
+            key = name.title()
+        map_ap_inad[key] = map_ap_inad.get(key, 0) + (r['t'] or 0)
+
+    sorted_ap_inad = sorted(map_ap_inad.items(), key=lambda x: x[1], reverse=True)[:5]
+    top5_sum_inad = sum(x[1] for x in sorted_ap_inad)
+    concentration_pct_inad = round((top5_sum_inad / tot_g_inad) * 100, 2)
+
+    top5_inad_formatted = []
+    for name, val in sorted_ap_inad:
+        pct = round((val / tot_g_inad) * 100, 2)
+        top5_inad_formatted.append({
+            "name": name,
+            "count": val,
+            "pct": pct
+        })
+
+    data = {
+        "status": "success",
+        "labels": labels,
+        "totales": totales,
+        "aereos": aereos,
+        "terrestres": terrestres,
+        "maritimos": maritimos,
+        "pct_change_total": round(pct_change_total, 2),
+        "top5_airports": top5_formatted,
+        "concentration_pct": concentration_pct,
+        "summary": {
+            "last_total": last_total,
+            "prev_total": prev_total
+        },
+        "inadmision2da": {
+            "labels": inad_labels,
+            "totales": inad_totales,
+            "rechazos": inad_rechazos,
+            "internaciones": inad_internaciones,
+            "pct_change_total": round(pct_change_inad, 2),
+            "top5_points": top5_inad_formatted,
+            "concentration_pct": concentration_pct_inad,
+            "summary": {
+                "last_total": inad_totales[-1] if inad_totales else 0,
+                "prev_total": inad_totales[-2] if len(inad_totales) >= 2 else 0,
+                "last_rechazo": inad_rechazos[-1] if inad_rechazos else 0,
+                "last_internacion": inad_internaciones[-1] if inad_internaciones else 0
+            }
+        }
     }
     return JsonResponse(data)
 

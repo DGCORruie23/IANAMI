@@ -311,3 +311,50 @@ class TramitesMigratorios(models.Model):
     class Meta:
         verbose_name = "Tramites Migratorios"
         verbose_name_plural = "Tramites Migratorios"
+
+#
+#-----------------------------------------------------------------------------------------------------
+#--------------------------------MODELOS para ACTUALIZAR ---------------------------------------------
+#-----------------------------------------------------------------------------------------------------
+#
+
+class TipoIngresoP(models.Model):
+    tipo = models.CharField(max_length=150, unique=True, db_index=True)
+
+    def __str__(self):
+        return self.tipo
+
+    class Meta:
+        verbose_name = "Tipo de Ingreso"
+        verbose_name_plural = "Tipos de Ingreso"
+
+class InternacionN(models.Model):
+    dia = models.DateField(db_index=True)
+    estado = models.ForeignKey(EstadoOR, on_delete=models.PROTECT)
+    puntoInternacion = models.CharField(max_length=255, null=True, blank=True)
+    tipoIngreso = models.ForeignKey(TipoIngresoP, on_delete=models.PROTECT, db_index=True)
+    nacionalidad = models.ForeignKey(Nacionalidad, on_delete=models.PROTECT)
+    total = models.IntegerField(default=0)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['dia', 'estado', 'tipoIngreso', 'puntoInternacion', 'nacionalidad']),
+        ]
+        verbose_name = "Internacion Nuevo"
+        verbose_name_plural = "Internaciones N"
+
+
+class Inadmision2da(models.Model):
+    dia = models.DateField(db_index=True)
+    estado = models.ForeignKey(EstadoOR, on_delete=models.PROTECT)
+    puntoInternacion = models.CharField(max_length=255, null=True, blank=True)
+    determinacion = models.CharField(max_length=150, db_index=True)
+    nacionalidad = models.ForeignKey(Nacionalidad, on_delete=models.PROTECT)
+    total = models.IntegerField(default=0)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['dia', 'estado', 'puntoInternacion', 'determinacion', 'nacionalidad']),
+        ]
+        verbose_name = "Inadmision 2da Rev"
+        verbose_name_plural = "Inadmisiones 2da Rev"

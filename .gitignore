@@ -3,5 +3,6 @@
 /entorno
 /media_volume
 /static_volume
+/test_files
 .env.db
 .env.dev

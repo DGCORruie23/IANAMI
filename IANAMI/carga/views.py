@@ -12,7 +12,7 @@ from .models import (
     Estado, EstadoOR, Nacionalidad, CanalizadoAdulto, CanalizadoNNA, CondicionEstancia,
     MotivoEstancia, Encuentro, ExtranjeroRecibido, Inadmision, Internacion,
     MexicanoRecibido, Presentado, Rescatado, Retornado, Traslado, Caravana, ActasCivil,
-    TramitesMigratorios
+    TramitesMigratorios, Inadmision2da, InternacionN, TipoIngresoP
 )
 
 # Cache dictionaries for fast queries
@@ -52,10 +52,13 @@ def preload_nationalities():
     except Exception as e:
         print("[preload] Error cargando nacionalidades desde Excel:", e)
 
+tipos_ingreso_cache = {}
+
 def init_caches():
-    global estados_cache, nacs_cache
+    global estados_cache, nacs_cache, tipos_ingreso_cache
     estados_cache = {e.estado.nombre.upper().strip(): e for e in EstadoOR.objects.select_related('estado').all()}
     nacs_cache = {n.nombre.upper().strip(): n for n in Nacionalidad.objects.all()}
+    tipos_ingreso_cache = {t.tipo.upper().strip(): t for t in TipoIngresoP.objects.all()}
 
 def clean_state_name(nombre):
     if not nombre:
@@ -101,6 +104,16 @@ def get_or_create_nacionalidad(nombre):
         nac, _ = Nacionalidad.objects.get_or_create(nombre=nombre_clean)
         nacs_cache[nombre_clean] = nac
     return nacs_cache[nombre_clean]
+
+def get_or_create_tipo_ingreso(nombre):
+    nombre_clean = clean_text(nombre)
+    if not nombre_clean:
+        nombre_clean = "DESCONOCIDO"
+    nombre_clean = nombre_clean[:150]
+    if nombre_clean not in tipos_ingreso_cache:
+        tipo_obj, _ = TipoIngresoP.objects.get_or_create(tipo=nombre_clean)
+        tipos_ingreso_cache[nombre_clean] = tipo_obj
+    return tipos_ingreso_cache[nombre_clean]
 
 def parse_date(date_str):
     if not date_str:
@@ -432,6 +445,50 @@ def process_row_to_batch(model_type, row, batch):
         )
         batch.append(obj)
         rows_added += 1
+    elif model_type == "inadmisiones2da":
+        dia = parse_date(row.get("DIA") or row.get("Dia") or row.get("dia"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("O.R.") or row.get("OR") or row.get("ESTADO / O.R."))
+        punto = clean_text(row.get("PUNTO DE INTERNACIÓN") or row.get("PUNTO DE INTERNACION") or row.get("Punto de internacion") or "")[:250]
+        det = clean_text(row.get("DETERMINACION") or row.get("DETERMINACIÓN") or row.get("Determinación") or "")[:150]
+        nac_val = row.get("NACIONADLIDAD") or row.get("NACIONALIDAD") or row.get("Nacionalidad")
+        nac = get_or_create_nacionalidad(nac_val)
+        tot = parse_int(row.get("TOTAL") or row.get("Total") or row.get("total"))
+
+        obj = Inadmision2da(
+            dia=dia,
+            estado=estado,
+            puntoInternacion=punto,
+            determinacion=det,
+            nacionalidad=nac,
+            total=tot
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "internaciones_n":
+        dia = parse_date(row.get("Dia") or row.get("DIA") or row.get("dia"))
+        if not dia:
+            return 0
+        estado = get_or_create_estado(row.get("O.R.") or row.get("OR") or row.get("ESTADO / O.R."))
+        punto = clean_text(row.get("Punto de internacion") or row.get("PUNTO DE INTERNACION") or row.get("PUNTO DE INTERNACIÓN") or "")[:250]
+        
+        tipo_raw = row.get("Tipo ") or row.get("Tipo") or row.get("TIPO") or row.get("TIPO DE INGRESO") or row.get("Tipo de Ingreso")
+        tipo_obj = get_or_create_tipo_ingreso(tipo_raw)
+        
+        nac = get_or_create_nacionalidad(row.get("Nacionalidad") or row.get("NACIONALIDAD") or row.get("NACIONADLIDAD"))
+        tot = parse_int(row.get("Total") or row.get("TOTAL") or row.get("total"))
+
+        obj = InternacionN(
+            dia=dia,
+            estado=estado,
+            puntoInternacion=punto,
+            tipoIngreso=tipo_obj,
+            nacionalidad=nac,
+            total=tot
+        )
+        batch.append(obj)
+        rows_added += 1
     return rows_added
 
 @login_required
@@ -513,7 +570,9 @@ def upload_view(request):
             "traslados": Traslado,
             "caravanas": Caravana,
             "actas_civil": ActasCivil,
-            "tramites_migratorios": TramitesMigratorios
+            "tramites_migratorios": TramitesMigratorios,
+            "inadmisiones2da": Inadmision2da,
+            "internaciones_n": InternacionN
         }
         
         model_class = model_classes.get(model_type)
@@ -541,7 +600,7 @@ def upload_view(request):
                 if len(batch) >= chunk_size:
                     try:
                         with transaction.atomic():
-                            model_class.objects.bulk_create(batch)
+                            model_class.objects.bulk_create(batch, batch_size=2000)
                     except Exception as db_error:
                         return JsonResponse({
                             "status": "error",
@@ -552,7 +611,7 @@ def upload_view(request):
             if batch:
                 try:
                     with transaction.atomic():
-                        model_class.objects.bulk_create(batch)
+                        model_class.objects.bulk_create(batch, batch_size=2000)
                 except Exception as db_error:
                     return JsonResponse({
                         "status": "error",
