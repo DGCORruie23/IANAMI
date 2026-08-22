@@ -358,3 +358,19 @@ class Inadmision2da(models.Model):
         ]
         verbose_name = "Inadmision 2da Rev"
         verbose_name_plural = "Inadmisiones 2da Rev"
+
+
+class MetricaComparativa(models.Model):
+    categoria = models.CharField(max_length=150, db_index=True)  # Ej. ACCIONES DE CONTROL, RESCATES, REPATRIADOS, PLANTILLA, SISTEMAS
+    subcategoria = models.CharField(max_length=150, db_index=True) # Ej. ENCUENTROS, MEX, EXT, TRASLADO_AEREO_PERSONAS, SISTEMAS_LIST
+    anio = models.IntegerField(db_index=True)                      # Ej. 2017, 2018, ... 2026
+    valor_numero = models.BigIntegerField(null=True, blank=True)   # Conteos / montos
+    valor_texto = models.CharField(max_length=255, null=True, blank=True) # Textos cortos (nombres de sistemas, etc)
+    datos_json = models.JSONField(null=True, blank=True)          # Listas o diccionarios complejos
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['categoria', 'subcategoria', 'anio']),
+        ]
+        verbose_name = "Métrica Comparativa"
+        verbose_name_plural = "Métricas Comparativas"

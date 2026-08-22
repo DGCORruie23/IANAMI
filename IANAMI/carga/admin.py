@@ -3,7 +3,7 @@ from .models import (
     Estado, EstadoOR, Nacionalidad, CanalizadoAdulto, CanalizadoNNA, CondicionEstancia,
     MotivoEstancia, Encuentro, ExtranjeroRecibido, Inadmision, Internacion,
     MexicanoRecibido, Presentado, Rescatado, Retornado, Traslado, Caravana, ActasCivil,
-    TramitesMigratorios, Inadmision2da, InternacionN, TipoIngresoP
+    TramitesMigratorios, Inadmision2da, InternacionN, TipoIngresoP, MetricaComparativa
 )
 
 @admin.register(Estado)
@@ -145,4 +145,11 @@ class InternacionNAdmin(admin.ModelAdmin):
     list_filter = ('estado', 'tipoIngreso', 'nacionalidad')
     search_fields = ('puntoInternacion',)
     date_hierarchy = 'dia'
+
+@admin.register(MetricaComparativa)
+class MetricaComparativaAdmin(admin.ModelAdmin):
+    list_display = ('categoria', 'subcategoria', 'anio', 'valor_numero', 'valor_texto')
+    list_filter = ('categoria', 'subcategoria', 'anio')
+    search_fields = ('categoria', 'subcategoria', 'valor_texto')
+    ordering = ('categoria', 'subcategoria', 'anio')
 

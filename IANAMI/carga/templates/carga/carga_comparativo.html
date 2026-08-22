@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#2C2C2A">
+    <title>Carga Módulo Comparativo · IA-NAMI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        :root {
+            --rojo: #B66666;
+            --arena: #BDB58D;
+            --verde: #778E88;
+            --crema: #E5E2D3;
+            --gris: #808080;
+            --blanco: #FAFAF8;
+            --gris-oscuro: #4A4A48;
+            --texto: #2C2C2A;
+            --fondo: #F2F0E8;
+            --fondo-card: #FAFAF8;
+            --borde: #D6D2C0;
+            --sombra: rgba(44, 44, 42, 0.08);
+            --sombra-med: rgba(44, 44, 42, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--fondo);
+            color: var(--texto);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--texto);
+            border-bottom: 2px solid var(--rojo);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            height: 56px;
+        }
+
+        .header-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 3px;
+            color: var(--crema);
+            line-height: 1;
+            text-decoration: none;
+        }
+
+        .header-logo span {
+            color: var(--rojo);
+        }
+
+        .nav-link {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--arena);
+            text-decoration: none;
+            border: 1px solid var(--arena);
+            padding: 6px 14px;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: var(--arena);
+            color: var(--texto);
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .upload-card {
+            width: 100%;
+            max-width: 540px;
+            background: var(--fondo-card);
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px var(--sombra);
+            padding: 32px;
+            position: relative;
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 2px;
+            color: var(--texto);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--gris);
+            line-height: 1.4;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--borde);
+            border-radius: 6px;
+            padding: 36px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--fondo);
+            position: relative;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--rojo);
+            background: rgba(182, 102, 102, 0.05);
+        }
+
+        .drop-icon {
+            font-size: 40px;
+            color: var(--rojo);
+            margin-bottom: 12px;
+        }
+
+        .drop-text {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gris-oscuro);
+            margin-bottom: 4px;
+        }
+
+        .drop-subtext {
+            font-size: 11px;
+            color: var(--gris);
+        }
+
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-info {
+            display: none;
+            margin-top: 16px;
+            padding: 12px;
+            background: var(--crema);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--texto);
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .submit-btn {
+            width: 100%;
+            margin-top: 24px;
+            padding: 12px;
+            background: var(--texto);
+            color: var(--crema);
+            border: 1px solid var(--texto);
+            border-radius: 4px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover {
+            background: var(--rojo);
+            border-color: var(--rojo);
+            color: var(--blanco);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .alert-box {
+            margin-top: 16px;
+            padding: 12px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            line-height: 1.4;
+            display: none;
+        }
+
+        .alert-success {
+            background: rgba(119, 142, 136, 0.15);
+            border: 1px solid var(--verde);
+            color: #233b34;
+        }
+
+        .alert-error {
+            background: rgba(182, 102, 102, 0.15);
+            border: 1px solid var(--rojo);
+            color: #703030;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="{% url 'comparativo' %}" class="header-logo">
+            IA-<span>NAMI</span>
+        </a>
+        <a href="{% url 'comparativo' %}" class="nav-link">
+            <i class="fa-solid fa-arrow-left" style="margin-right: 4px;"></i> Ver Comparativo
+        </a>
+    </header>
+
+    <div class="container">
+        <div class="upload-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fa-solid fa-file-excel" style="color:var(--rojo);"></i> CARGA LÍNEA DEL TIEMPO
+                </div>
+                <div class="card-subtitle">
+                    Sube el archivo Excel de datos estadísticos para actualizar los datos anuales del Módulo Comparativo (2017 - fecha).
+                </div>
+            </div>
+
+            <form id="uploadForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="drop-zone" id="dropZone">
+                    <i class="fa-solid fa-file-arrow-up drop-icon"></i>
+                    <div class="drop-text">Arrastra tu archivo .xlsx o haz clic aquí</div>
+                    <div class="drop-subtext">Formatos soportados: .xlsx, .xls</div>
+                    <input type="file" name="file" id="fileInput" class="file-input" accept=".xlsx, .xls" required>
+                </div>
+
+                <div class="file-info" id="fileInfo">
+                    <span id="fileName"><i class="fa-solid fa-file-excel"></i> archivo.xlsx</span>
+                    <i class="fa-solid fa-check" style="color: var(--verde);"></i>
+                </div>
+
+                <div id="alertSuccess" class="alert-box alert-success"></div>
+                <div id="alertError" class="alert-box alert-error"></div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Procesar e Importar Datos
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const uploadForm = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const alertSuccess = document.getElementById('alertSuccess');
+        const alertError = document.getElementById('alertError');
+
+        fileInput.addEventListener('change', (e) => {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName.innerHTML = `<i class="fa-solid fa-file-excel" style="margin-right:6px;"></i> ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                fileInfo.style.display = 'flex';
+            }
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            }, false);
+        });
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            alertSuccess.style.display = 'none';
+            alertError.style.display = 'none';
+
+            if (!fileInput.files.length) return;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Importando...`;
+
+            try {
+                const response = await fetch("{% url 'carga_comparativo' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    alertSuccess.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${result.message}`;
+                    alertSuccess.style.display = 'block';
+                    uploadForm.reset();
+                    fileInfo.style.display = 'none';
+                } else {
+                    alertError.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${result.message}`;
+                    alertError.style.display = 'block';
+                }
+            } catch (err) {
+                alertError.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Ocurrió un error al procesar el archivo.`;
+                alertError.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Procesar e Importar Datos`;
+            }
+        });
+    </script>
+</body>
+</html>

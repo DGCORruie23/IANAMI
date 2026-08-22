@@ -259,6 +259,40 @@ def inteligencia_view(request):
 def indicadores_view(request):
     return render(request, 'inteligencia/indicadores.html')
 
+from carga.models import (
+    Rescatado, Presentado, CanalizadoAdulto, CanalizadoNNA, Retornado,
+    MexicanoRecibido, ExtranjeroRecibido, Inadmision, Internacion,
+    Encuentro, CondicionEstancia, MotivoEstancia, Caravana, ActasCivil, TramitesMigratorios,
+    InternacionN, MetricaComparativa
+)
+
+@login_required
+def comparativo_view(request):
+    return render(request, 'inteligencia/comparativo.html')
+
+@login_required
+def comparativo_data_view(request):
+    # Fetch all metrics stored in BD
+    metrics_qs = MetricaComparativa.objects.all().values('categoria', 'subcategoria', 'anio', 'valor_numero', 'valor_texto')
+    
+    # Structure data by Category -> Subcategory -> Year
+    data_by_category = {}
+    for item in metrics_qs:
+        cat = item['categoria']
+        sub = item['subcategoria']
+        anio = item['anio']
+        val_num = item['valor_numero']
+        val_txt = item['valor_texto']
+        
+        if cat not in data_by_category:
+            data_by_category[cat] = {}
+        if sub not in data_by_category[cat]:
+            data_by_category[cat][sub] = {}
+            
+        data_by_category[cat][sub][anio] = val_num if val_num is not None else val_txt
+
+    return JsonResponse({"status": "success", "data": data_by_category})
+
 @login_required
 def indicadores_data_view(request):
     # Get latest date in DB or default to today

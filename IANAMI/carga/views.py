@@ -12,7 +12,7 @@ from .models import (
     Estado, EstadoOR, Nacionalidad, CanalizadoAdulto, CanalizadoNNA, CondicionEstancia,
     MotivoEstancia, Encuentro, ExtranjeroRecibido, Inadmision, Internacion,
     MexicanoRecibido, Presentado, Rescatado, Retornado, Traslado, Caravana, ActasCivil,
-    TramitesMigratorios, Inadmision2da, InternacionN, TipoIngresoP
+    TramitesMigratorios, Inadmision2da, InternacionN, TipoIngresoP, MetricaComparativa
 )
 
 # Cache dictionaries for fast queries
@@ -624,3 +624,145 @@ def upload_view(request):
             return JsonResponse({"status": "error", "message": f"Error al procesar el archivo: {str(e)}"}, status=500)
             
     return render(request, "carga/upload.html")
+
+
+@login_required
+def carga_comparativo_view(request):
+    if request.method == "POST":
+        file = request.FILES.get("file")
+        if not file:
+            return JsonResponse({"status": "error", "message": "No se seleccionó ningún archivo."}, status=400)
+            
+        try:
+            # Open file with ZipFile to inspect cell fill styles (detect yellow headers FillId==2)
+            import zipfile, xml.etree.ElementTree as ET
+            
+            yellow_rows = set()
+            file.seek(0)
+            try:
+                with zipfile.ZipFile(file) as z:
+                    shared_strings = []
+                    if 'xl/sharedStrings.xml' in z.namelist():
+                        ss_xml = z.read('xl/sharedStrings.xml')
+                        ss_root = ET.fromstring(ss_xml)
+                        for si in ss_root.findall('{http://schemas.openxmlformats.org/spreadsheetml/2006/main}si'):
+                            texts = [t.text for t in si.findall('.//{http://schemas.openxmlformats.org/spreadsheetml/2006/main}t') if t.text]
+                            shared_strings.append(''.join(texts))
+
+                    styles_xml = z.read('xl/styles.xml')
+                    st_root = ET.fromstring(styles_xml)
+                    cell_xfs = st_root.find('{http://schemas.openxmlformats.org/spreadsheetml/2006/main}cellXfs')
+                    
+                    xf_fill_map = []
+                    if cell_xfs is not None:
+                        for xf in cell_xfs.findall('{http://schemas.openxmlformats.org/spreadsheetml/2006/main}xf'):
+                            fill_id = int(xf.attrib.get('fillId', 0))
+                            xf_fill_map.append(fill_id)
+
+                    sheet1_xml = z.read('xl/worksheets/sheet1.xml')
+                    s_root = ET.fromstring(sheet1_xml)
+                    
+                    for r in s_root.findall('.//{http://schemas.openxmlformats.org/spreadsheetml/2006/main}row'):
+                        r_idx = int(r.attrib.get('r', 0))
+                        cells = r.findall('{http://schemas.openxmlformats.org/spreadsheetml/2006/main}c')
+                        first_cell = next((c for c in cells if c.attrib.get('r', '').startswith('A')), None)
+                        if first_cell is not None:
+                            s_style = int(first_cell.attrib.get('s', 0))
+                            fill_id = xf_fill_map[s_style] if s_style < len(xf_fill_map) else 0
+                            # FillId 2 or FillId 3 correspond to category headers in yellow
+                            if fill_id in [2, 3]:
+                                yellow_rows.add(r_idx)
+            except Exception as zip_err:
+                print("Zip style parsing warning:", zip_err)
+
+            file.seek(0)
+            df_dict = pd.read_excel(file, sheet_name=None, header=None)
+            sheet_name = list(df_dict.keys())[0]
+            df = df_dict[sheet_name]
+            
+            # Map column indices to years (B=1 -> 2017, C=2 -> 2018, ... K=10 -> 2026)
+            years_map = {}
+            for col_idx in range(1, df.shape[1]):
+                val = str(df.iloc[0, col_idx]).strip()
+                if val.isdigit() and len(val) == 4:
+                    years_map[col_idx] = int(val)
+                elif not val or val == 'nan':
+                    val2 = str(df.iloc[1, col_idx]).strip() if df.shape[0] > 1 else ''
+                    if val2.isdigit() and len(val2) == 4:
+                        years_map[col_idx] = int(val2)
+                        
+            if not years_map:
+                for col_idx in range(1, min(11, df.shape[1])):
+                    years_map[col_idx] = 2016 + col_idx
+
+            metricas_batch = []
+            
+            def parse_num(val):
+                if pd.isna(val) or str(val).strip() in ['', 'nan', 'None']:
+                    return None
+                try:
+                    return int(float(str(val).replace(',', '').strip()))
+                except ValueError:
+                    return None
+
+            current_category = "GENERAL"
+
+            # Key category names list for fallback
+            category_keywords = [
+                'ACCIONES DE CONTROL', 'ACCIONES DE RESCATES', 'RESCATES', 'REINCIDENCIA',
+                'EXTRANJEROS RECIBIDO', 'EXTRANJEROS RECIBIDOS', 'CARAVANAS', 'TRASLADOS DE NORTE A SUR',
+                'TRASLADO DE NORTE A SUR', 'PRESUPUESTO', 'PLANTILLA', 'TRASLADOS A SU PAIS',
+                'TRASLADOS A SU PAÍS', 'INGRESOS AL PAIS', 'INGRESOS AL PAÍS',
+                'PERSONAS REGULARIZADAS', 'REPATRIADOS', 'SISTEMAS'
+            ]
+
+            for row_idx in range(df.shape[0]):
+                excel_row_num = row_idx + 1
+                first_cell = str(df.iloc[row_idx, 0]).strip() if pd.notna(df.iloc[row_idx, 0]) else ""
+                clean_name = clean_text(first_cell)
+                
+                # Header row check (either in yellow_rows or in category_keywords)
+                if excel_row_num in yellow_rows or any(kw in clean_name for kw in category_keywords):
+                    if clean_name and clean_name not in ['INDICADOR', 'ANIO', 'AÑO']:
+                        current_category = clean_name
+                        continue
+                
+                if not clean_name or clean_name in ['ANIO', 'AÑO', 'INDICADOR']:
+                    continue
+                    
+                # Process row values per year
+                for col_idx, anio in years_map.items():
+                    cell_val = df.iloc[row_idx, col_idx] if col_idx < df.shape[1] else None
+                    
+                    if current_category == 'SISTEMAS':
+                        val_str = str(cell_val).strip() if pd.notna(cell_val) else ""
+                        if val_str and val_str.lower() != 'nan':
+                            metricas_batch.append(MetricaComparativa(
+                                categoria='SISTEMAS',
+                                subcategoria=clean_name,
+                                anio=anio,
+                                valor_texto=val_str
+                            ))
+                    else:
+                        num_val = parse_num(cell_val)
+                        if num_val is not None:
+                            metricas_batch.append(MetricaComparativa(
+                                categoria=current_category,
+                                subcategoria=clean_name,
+                                anio=anio,
+                                valor_numero=num_val
+                            ))
+
+            with transaction.atomic():
+                MetricaComparativa.objects.all().delete()
+                MetricaComparativa.objects.bulk_create(metricas_batch, batch_size=2000)
+
+            return JsonResponse({
+                "status": "success", 
+                "message": f"Se procesó e importó exitosamente la nueva estructura del Excel ({len(metricas_batch)} métricas registradas en PostgreSQL)."
+            })
+
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": f"Error al procesar el archivo Excel: {str(e)}"}, status=500)
+
+    return render(request, "carga/carga_comparativo.html")

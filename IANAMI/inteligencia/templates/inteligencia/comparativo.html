@@ -1,0 +1,2929 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#2C2C2A" />
+    <title>Comparativo Migración · Estados Unidos y México (2017-2026)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+      :root {
+        --rojo: #b66666;
+        --rojo-oscuro: #8b3a3a;
+        --arena: #bdb58d;
+        --verde: #778e88;
+        --verde-oscuro: #3e5e54;
+        --crema: #e5e2d3;
+        --gris: #808080;
+        --blanco: #fafaf8;
+        --gris-claro: #d4d0c4;
+        --gris-oscuro: #4a4a48;
+        --texto: #2c2c2a;
+        --fondo: #f2f0e8;
+        --fondo-card: #fafaf8;
+        --borde: #d6d2c0;
+        --sombra: rgba(44, 44, 42, 0.08);
+        --sombra-med: rgba(44, 44, 42, 0.14);
+        --rojo-alpha: rgba(182, 102, 102, 0.12);
+        --verde-alpha: rgba(119, 142, 136, 0.12);
+        --arena-alpha: rgba(189, 181, 141, 0.15);
+      }
+
+      *, ::after, ::before {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        font-size: 13px;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--fondo);
+        color: var(--texto);
+        min-height: 100vh;
+        overflow-x: auto;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--fondo);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--arena);
+        border-radius: 3px;
+      }
+
+      /* HEADER */
+      .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: var(--texto);
+        border-bottom: 2px solid var(--rojo);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        height: 56px;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .header-logo {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 22px;
+        letter-spacing: 3px;
+        color: var(--crema);
+        line-height: 1;
+        text-decoration: none;
+      }
+
+      .header-logo span {
+        color: var(--rojo);
+      }
+
+      .header-sub {
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 2px;
+        color: var(--arena);
+        text-transform: uppercase;
+        border-left: 1px solid var(--gris);
+        padding-left: 16px;
+      }
+
+      .header-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 9px;
+        color: var(--arena);
+      }
+
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--verde);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+
+      /* MAIN CONTAINER */
+      .main {
+        margin-top: 66px;
+        padding: 16px 24px 40px 24px;
+        min-width: 1550px;
+      }
+
+      .page-title-banner {
+        text-align: center;
+        background: var(--fondo-card);
+        border: 1px solid var(--borde);
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 4px var(--sombra);
+      }
+
+      .page-title-banner h1 {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 32px;
+        letter-spacing: 3px;
+        color: var(--texto);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+      }
+
+      .page-title-banner h1 span.highlight {
+        color: var(--rojo);
+      }
+
+      /* TIMELINE YEARS BAR */
+      .years-row {
+        display: grid;
+        grid-template-columns: 220px repeat(10, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+        align-items: stretch;
+      }
+
+      .year-cell-empty {
+        /* Corner spacer */
+      }
+
+      .year-btn {
+        background: #7a7657;
+        color: var(--blanco);
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 24px;
+        text-align: center;
+        padding: 8px 4px;
+        border-radius: 4px;
+        position: relative;
+        box-shadow: 0 2px 4px var(--sombra);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .year-btn.arrow-shape {
+        clip-path: polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%, 15% 50%);
+      }
+
+      .year-btn .sub-badge {
+        position: absolute;
+        top: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--texto);
+        color: var(--crema);
+        font-family: "DM Sans", sans-serif;
+        font-size: 9px;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 3px;
+        border: 1px solid var(--arena);
+        white-space: nowrap;
+      }
+
+      /* MATRIX LAYOUT */
+      .matrix-grid {
+        display: grid;
+        grid-template-columns: 220px repeat(10, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      /* SIDE PANELS */
+      .side-card {
+        background: var(--fondo-card);
+        border: 1px solid var(--borde);
+        border-radius: 4px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        box-shadow: 0 2px 4px var(--sombra);
+      }
+
+      .side-card.us-card {
+        background: linear-gradient(180deg, #9b4b4b 0%, #703030 100%);
+        color: var(--blanco);
+        border-color: var(--rojo-oscuro);
+      }
+
+      .side-card.mx-card {
+        background: linear-gradient(180deg, #3d5e54 0%, #233b34 100%);
+        color: var(--blanco);
+        border-color: var(--verde-oscuro);
+      }
+
+      .flag-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        background: rgba(255,255,255,0.15);
+      }
+
+      .country-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 28px;
+        letter-spacing: 2px;
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+
+      .country-subtitle {
+        font-size: 11px;
+        font-weight: 500;
+        opacity: 0.9;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .map-vector {
+        font-size: 40px;
+        opacity: 0.8;
+        margin-top: auto;
+      }
+
+      .section-label-card {
+        background: var(--fondo-card);
+        border: 1px solid var(--borde);
+        border-radius: 4px;
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 18px;
+        letter-spacing: 1.5px;
+        color: var(--texto);
+        box-shadow: 0 2px 4px var(--sombra);
+      }
+
+      /* CONTENT CARDS IN MATRIX */
+      .event-card {
+        background: var(--fondo-card);
+        border: 1px solid var(--borde);
+        border-radius: 4px;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 4px var(--sombra);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .event-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px var(--sombra-med);
+      }
+
+      .card-header-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 15px;
+        letter-spacing: 1px;
+        color: var(--texto);
+        margin-bottom: 8px;
+        border-bottom: 1px dashed var(--borde);
+        padding-bottom: 4px;
+        line-height: 1.1;
+      }
+
+      .event-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: 10.5px;
+        color: var(--gris-oscuro);
+        line-height: 1.35;
+      }
+
+      .event-list li {
+        margin-bottom: 6px;
+        position: relative;
+        padding-left: 10px;
+      }
+
+      .event-list li::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: var(--rojo);
+        font-weight: bold;
+      }
+
+      .card-footer-source {
+        margin-top: auto;
+        padding-top: 6px;
+        font-size: 8px;
+        font-style: italic;
+        color: var(--gris);
+        border-top: 1px solid rgba(0,0,0,0.05);
+      }
+
+      .card-stats-box {
+        margin-top: auto;
+        background: var(--fondo);
+        border: 1px solid var(--borde);
+        border-radius: 3px;
+        padding: 4px 6px;
+        text-align: center;
+        font-size: 9.5px;
+        font-weight: 600;
+        color: var(--texto);
+      }
+
+      .card-stats-box .stat-val {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--rojo-oscuro);
+      }
+
+      /* BOTTOM SECTION: ESTADISTICAS MIGATORIAS */
+      .bottom-section {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .stats-panel-header {
+        background: var(--crema);
+        border: 1px solid var(--borde);
+        border-radius: 4px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .stats-panel-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 20px;
+        letter-spacing: 1px;
+        color: var(--texto);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .button-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .stat-btn {
+        background: var(--fondo-card);
+        border: 1px solid var(--borde);
+        border-radius: 3px;
+        padding: 6px 4px;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--texto);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .stat-btn:hover {
+        background: var(--arena-alpha);
+        border-color: var(--arena);
+      }
+
+      .stat-btn.active-category {
+        background: #8b263e !important;
+        color: #ffffff !important;
+        border-color: #6b1d30 !important;
+      }
+
+      .btn-regreso {
+        background: #8b263e !important;
+        color: #ffffff !important;
+        border-color: #6b1d30 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .btn-back-arrow {
+        width: 0;
+        height: 0;
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        border-right: 7px solid #ffffff;
+        margin-right: 2px;
+      }
+
+      .bottom-chart-card {
+        background: var(--fondo-card);
+        border: 1px solid var(--borde);
+        border-radius: 4px;
+        padding: 12px;
+        box-shadow: 0 2px 4px var(--sombra);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .chart-wrapper {
+        position: relative;
+        width: 100%;
+        height: 280px;
+      }
+
+      /* VIAJES OVERLAY CARDS FOR RESCATES */
+      .viajes-overlay-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 8px;
+        padding: 0 10px;
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      .viajes-card {
+        background: #fafaf8;
+        border: 1px solid #d6d2c0;
+        border-radius: 3px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .viajes-card-header {
+        background: #8b263e;
+        color: #ffffff;
+        font-family: "DM Sans", sans-serif;
+        font-size: 8px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-align: center;
+        padding: 1px 0;
+        text-transform: uppercase;
+      }
+
+      .viajes-card-body {
+        padding: 2px 4px;
+        font-size: 8px;
+        font-family: "DM Sans", sans-serif;
+        color: #2c2c2a;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .viajes-card-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .viajes-card-label {
+        font-weight: 600;
+        color: #4a4a48;
+      }
+
+      .viajes-card-val {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+      }
+
+      /* SISTEMAS MATRIX CARDS */
+      .sistemas-matrix-container {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 8px;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        padding: 10px 0;
+      }
+
+      .sistemas-card {
+        background: #e8e4d8;
+        border: 1px solid #d4d0c4;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .sistemas-card-header {
+        background: #dad4c3;
+        color: #2c2c2a;
+        font-family: "DM Sans", sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        text-align: center;
+        padding: 5px 4px;
+        border-bottom: 1px solid #c9c3b0;
+        line-height: 1.2;
+      }
+
+      .sistemas-card-list {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sistemas-card-item {
+        padding: 5px 4px;
+        font-size: 9.5px;
+        font-weight: 600;
+        color: #2c2c2a;
+        text-align: center;
+        border-bottom: 1px solid #dfdacd;
+        line-height: 1.2;
+      }
+
+      .sistemas-card-item:last-child {
+        border-bottom: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-left">
+        <a href="{% url 'indicadores' %}" class="header-logo">
+          <i class="fa-solid fa-chart-line" style="margin-right:6px;"></i>IA-<span>NAMI</span>
+        </a>
+        <div class="header-sub">Módulo Comparativo Migratorio</div>
+      </div>
+      <div class="header-status">
+        <div class="status-dot"></div>
+        <span>MATRIZ CRONOLÓGICA 2017 - 2026</span>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="main">
+      <!-- TITLE BANNER -->
+      <div class="page-title-banner">
+        <h1>
+          <i class="fa-solid fa-globe"></i> MIGRACIÓN <span class="highlight">•</span> ESTADOS UNIDOS Y MÉXICO <span class="highlight">(2017–2026)</span>
+        </h1>
+      </div>
+
+      <!-- TIMELINE YEARS HEADER -->
+      <div class="years-row">
+        <div class="year-cell-empty"></div>
+        <div class="year-btn arrow-shape">
+          <span class="sub-badge">20 ENE Trump</span> 2017
+        </div>
+        <div class="year-btn arrow-shape">2018</div>
+        <div class="year-btn arrow-shape">2019</div>
+        <div class="year-btn arrow-shape">2020</div>
+        <div class="year-btn arrow-shape">
+          <span class="sub-badge">20 ENE Biden</span> 2021
+        </div>
+        <div class="year-btn arrow-shape">2022</div>
+        <div class="year-btn arrow-shape">2023</div>
+        <div class="year-btn arrow-shape">2024</div>
+        <div class="year-btn arrow-shape">
+          <span class="sub-badge">20 ENE Trump</span> 2025
+        </div>
+        <div class="year-btn arrow-shape">2026</div>
+      </div>
+
+      <!-- MATRIX GRID 1: ESTADOS UNIDOS -->
+      <div class="matrix-grid">
+        <!-- SIDE CARD USA -->
+        <div class="side-card us-card">
+          <div class="flag-icon">
+            <img src="{% static 'inteligencia/comparativo/EUA.png' %}" alt="Bandera EUA" style="height: 80%; width: 80%;">
+          </div>
+          <div class="country-title">ESTADOS UNIDOS</div>
+          <div class="country-subtitle">País de Destino</div>
+          <div class="map-vector">
+            <img src="{% static 'inteligencia/comparativo/MAP EUA.png' %}" alt="Mapa EUA" style="height: 90%; width: 90%;">
+          </div>
+        </div>
+
+        <!-- 2017 USA -->
+        <div class="event-card">
+          <div class="card-header-title">SEGURIDAD FRONTERIZA</div>
+          <ul class="event-list">
+            <li>25 enero, órdenes ejecutivas construcción del muro y control migratorio.</li>
+            <li>Aumento de detenciones y prioridad a remociones.</li>
+            <li>Expansión de operaciones de ICE en el interior.</li>
+            <li>Mayor cooperación entre ICE y autoridades estatales y locales (Programa 287 G).</li>
+          </ul>
+          <div class="card-footer-source">Fuente: Casa Blanca / DHS / CBP / ICE</div>
+        </div>
+
+        <!-- 2018 USA -->
+        <div class="event-card">
+          <div class="card-header-title">TOLERANCIA CERO</div>
+          <ul class="event-list">
+            <li>6 abril, Depto. de Justicia ordena procesar penalmente todos los ingresos irregulares; al judicializar a los adultos, los niños no podían permanecer con ellos y fueron transferidos al HHS (separación de familias).</li>
+            <li>20 junio se firma la Orden Ejecutiva 13841 sobre mantener la unidad familiar durante la detención.</li>
+          </ul>
+          <div class="card-footer-source">Fuente: DHS / Depto de Justicia (DOJ) / GAO</div>
+        </div>
+
+        <!-- 2019 USA -->
+        <div class="event-card">
+          <div class="card-header-title">MPP (Quédate en México)</div>
+          <ul class="event-list">
+            <li>25 enero inicia MPP ("Quédate en México").</li>
+            <li>Solicitantes de asilo de terceros países son devueltos a México para esperar juicio.</li>
+            <li>70,000 devoluciones (2019-2021).</li>
+            <li>30 mayo 2019, anuncio de aranceles a México condicionado a la reducción de la migración.</li>
+            <li>Durante 2019 el MPP se fue ampliando gradualmente a toda la frontera sur de EE UU.</li>
+          </ul>
+          <div class="card-footer-source">Fuente: Casa Blanca / DHS / CBP</div>
+        </div>
+
+        <!-- 2020 USA -->
+        <div class="event-card">
+          <div class="card-header-title">PANDEMIA TÍTULO 42</div>
+          <ul class="event-list">
+            <li>20 marzo, inicia Título 42; expulsiones sanitarias inmediatas sin procedimiento migratorio ordinario.</li>
+            <li>2,965,665 expulsiones hasta 11 MAY 2023.</li>
+          </ul>
+          <div class="card-footer-source">Fuente: CBP / CDC</div>
+        </div>
+
+        <!-- 2021 USA -->
+        <div class="event-card">
+          <div class="card-header-title">CAMBIO DE ENFOQUE</div>
+          <ul class="event-list">
+            <li>Intento de terminar MPP (JUN 2021) pero el MPP permaneció vigente.</li>
+            <li>Título 42 continúa.</li>
+            <li>27 julio, mediante el Blueprint, Biden impulsa estrategia para atender causas, fortalecer cooperación regional y ampliar vías legales en cumplimiento de la Orden Ejecutiva 14010.</li>
+          </ul>
+          <div class="card-footer-source">Fuente: DHS / Casa Blanca</div>
+        </div>
+
+        <!-- 2022 USA -->
+        <div class="event-card">
+          <div class="card-header-title">TRASICIÓN A VÍAS LEGALES</div>
+          <ul class="event-list">
+            <li>10 junio, 20 países suscriben Declaración de Los Ángeles sobre Migración y Protección.</li>
+            <li>8 agosto DHS inicia formalmente la terminación del MPP por decisión de Suprema Corte del 30 de junio.</li>
+            <li>12 octubre 2022 se implementa PAROLE para Venezuela, vía legal de ingreso con patrocinador.</li>
+            <li>Hasta 30,000 autorizaciones de viaje al mes.</li>
+          </ul>
+          <div class="card-footer-source">Fuente: DHS / USCIS</div>
+        </div>
+
+        <!-- 2023 USA -->
+        <div class="event-card">
+          <div class="card-header-title">CBP ONE</div>
+          <ul class="event-list">
+            <li>5 enero 2023 se amplía parole a Cuba, Haití y Nicaragua.</li>
+            <li>12 enero 2023 inicia CBP One para citas en puertos de entrada.</li>
+            <li>Para solicitar cita se debe estar al norte del paralelo 19 (centro/norte de México).</li>
+            <li>CBP One llega a 1,450 citas diarias.</li>
+            <li>11 mayo 2023 termina Título 42 (expulsión inmediata sin procedimiento) y se aplica Título 8.</li>
+          </ul>
+          <div class="card-footer-source">Fuente: DHS / CBP</div>
+        </div>
+
+        <!-- 2024 USA -->
+        <div class="event-card">
+          <div class="card-header-title">ACCESO CONDICIONADO</div>
+          <ul class="event-list">
+            <li>5 jun 2024: orden ejecutiva restringe asilo al superar umbrales de cruces (máximo 2,500 encuentros por día).</li>
+            <li>23 agosto 2024 ampliación de CBP One. A solicitud de México, se permitió solicitar citas desde Chiapas y Tabasco.</li>
+          </ul>
+          <div class="card-footer-source">Fuente: Casa Blanca / CBP</div>
+        </div>
+
+        <!-- 2025 USA -->
+        <div class="event-card">
+          <div class="card-header-title">TRUMP II - DISUASIÓN</div>
+          <ul class="event-list">
+            <li>20 enero 2025 declaración de emergencia en frontera sur; despliegue militar.</li>
+            <li>20 enero 2025 fin de CBP One y del parole CHNV.</li>
+            <li>CBP reportó 936,500 procesados con citas CBP One (ene 2023 - dic 2024).</li>
+            <li>Febrero 2025 arancel 25% a productos de México.</li>
+            <li>10 marzo 2025 DHS lanza CBP Home para salida voluntaria.</li>
+            <li>30 Jun 2025 Establece 1% de impuesto a remesas.</li>
+          </ul>
+          <div class="card-footer-source">Fuente: Casa Blanca / CBP</div>
+        </div>
+
+        <!-- 2026 USA -->
+        <div class="event-card">
+          <div class="card-header-title">CONSOLIDACIÓN DE DISUASIÓN</div>
+          <ul class="event-list">
+            <li>10 junio 2026 EEUU amplia recursos para ICE y CBP hasta 2029.</li>
+            <li>Junio 2026 EE.UU. logra respaldo judicial para ejecutar políticas restrictivas de entrada.</li>
+            <li>EE UU mantiene la presión fronteriza y repatriación de extranjeros a Guatemala.</li>
+            <li>Abril de 2026 EE UU deporta mexicanos a Guatemala.</li>
+            <li>EE UU exige cero cruces en frontera con México.</li>
+          </ul>
+          <div class="card-footer-source">Fuente: Casa Blanca / DHS / CBP</div>
+        </div>
+      </div>
+
+      <!-- SECTION SEPARATOR / ACCIÓN Y REACCIÓN BANNER -->
+      <div class="years-row" style="margin-top: 20px; margin-bottom: 20px;">
+        <div class="section-label-card">
+          <i class="fa-solid fa-right-left" style="margin-right:8px; color:var(--rojo);"></i> ACCIÓN Y REACCIÓN
+        </div>
+        <div class="year-btn arrow-shape" style="background:#5c5a43; font-size:11px; min-height:56px; padding:6px 12px 6px 16px; line-height:1.2; font-family:'DM Sans', sans-serif; font-weight:700;">REDADAS Y DEPORTACIONES</div>
+        <div class="year-btn arrow-shape" style="background:#5c5a43; font-size:11px; min-height:56px; padding:6px 12px 6px 16px; line-height:1.2; font-family:'DM Sans', sans-serif; font-weight:700;">SEPARACIÓN DE FAMILIAS</div>
+        <div class="year-btn arrow-shape" style="background:#5c5a43; font-size:11px; min-height:56px; padding:6px 12px 6px 16px; line-height:1.2; font-family:'DM Sans', sans-serif; font-weight:700;">2022-2024 QUÉDATE EN MÉXICO</div>
+        <div class="year-btn arrow-shape" style="background:#5c5a43; font-size:11px; min-height:56px; padding:6px 12px 6px 16px; line-height:1.2; font-family:'DM Sans', sans-serif; font-weight:700;">EXPULSIÓN INMEDIATA</div>
+        <div class="year-btn arrow-shape" style="background:#5c5a43; font-size:11px; min-height:56px; padding:6px 12px 6px 16px; line-height:1.2; font-family:'DM Sans', sans-serif; font-weight:700;">EXPECTATIVA DE RECEPCIÓN</div>
+        <div class="year-btn arrow-shape" style="background:#5c5a43; font-size:11px; min-height:56px; padding:6px 12px 6px 16px; line-height:1.2; font-family:'DM Sans', sans-serif; font-weight:700;">APERTURA DE ALTERNATIVAS</div>
+        <div class="year-btn arrow-shape" style="background:#5c5a43; font-size:11px; min-height:56px; padding:6px 12px 6px 16px; line-height:1.2; font-family:'DM Sans', sans-serif; font-weight:700;">EFECTO LLAMADA</div>
+        <div class="year-btn arrow-shape" style="background:#5c5a43; font-size:11px; min-height:56px; padding:6px 12px 6px 16px; line-height:1.2; font-family:'DM Sans', sans-serif; font-weight:700;">CONTROL DEL EFECTO LLAMADA</div>
+        <div class="year-btn arrow-shape" style="background:#5c5a43; font-size:11px; min-height:56px; padding:6px 12px 6px 16px; line-height:1.2; font-family:'DM Sans', sans-serif; font-weight:700;">RESTRICCIÓN MIGRATORIA</div>
+        <div class="year-btn arrow-shape" style="background:#5c5a43; font-size:11px; min-height:56px; padding:6px 12px 6px 16px; line-height:1.2; font-family:'DM Sans', sans-serif; font-weight:700;">RESTRICCIÓN Y EXPULSIÓN</div>
+      </div>
+
+      <!-- MATRIX GRID 2: MEXICO -->
+      <div class="matrix-grid">
+        <!-- SIDE CARD MEXICO -->
+        <div class="side-card mx-card">
+          <div class="flag-icon">
+            <img src="{% static 'inteligencia/comparativo/MEX.png' %}" alt="Bandera MEX" style="height: 80%; width: 80%;">
+          </div>
+          <div class="country-title">MÉXICO</div>
+          <div class="country-subtitle">País de origen, tránsito, destino y retorno</div>
+          <div class="map-vector">
+           <img src="{% static 'inteligencia/comparativo/MAP MEX.png' %}" alt="Mapa MEX" style="height: 90%; width: 90%;">
+          </div>
+        </div>
+
+        <!-- 2017 MEXICO -->
+        <div class="event-card">
+          <div class="card-header-title">PROTECCIÓN DE CONNACIONALES</div>
+          <ul class="event-list">
+            <li>Protección consular y coordinación institucional ante nuevas políticas migratorias de EE UU.</li>
+            <li>Programa Temporal de Regularización Migratoria (9 ene a 19 dic 2017).</li>
+            <li>3,489 personas regularizadas.</li>
+          </ul>
+          <div class="card-stats-box">
+            Solicitudes de asilo COMAR:<br/>
+            <span class="stat-val">14,596 (2017)</span>
+          </div>
+          <div class="card-footer-source">Fuente: SEGOB / SRE / ACNUR</div>
+        </div>
+
+        <!-- 2018 MEXICO -->
+        <div class="event-card">
+          <div class="card-header-title">ATENCIÓN HUMANITARIA</div>
+          <ul class="event-list">
+            <li>México condena la medida de separación familiar, recibe y atiende personas mexicanas afectadas por esa política.</li>
+            <li>18 de octubre de 2018, primera gran caravana migrante, ingreso por Ciudad Hidalgo, Chiapas. Puente Rodolfo Robles-Río Suchiate. Más de 8,000 personas.</li>
+          </ul>
+          <div class="card-stats-box">
+            Solicitudes de asilo COMAR:<br/>
+            <span class="stat-val">29,631 (2018)</span>
+          </div>
+          <div class="card-footer-source">Fuente: SEGOB / SRE / ACNUR</div>
+        </div>
+
+        <!-- 2019 MEXICO -->
+        <div class="event-card">
+          <div class="card-header-title">PAÍS DE ESPERA MPP</div>
+          <ul class="event-list">
+            <li>7 junio, Declaración conjunta México-EE UU para reducir migración irregular.</li>
+            <li>Junio, inicio de la recepción de personas extranjeras retornadas por EE UU bajo los MPP.</li>
+            <li>Junio, despliegue de la Guardia Nacional en apoyo a acciones de control migratorio.</li>
+          </ul>
+          <div class="card-stats-box">
+            Solicitudes de asilo COMAR:<br/>
+            <span class="stat-val">70,418 (2019)</span>
+          </div>
+          <div class="card-footer-source">Fuente: SRE / SEGOB / COMAR</div>
+        </div>
+
+        <!-- 2020 MEXICO -->
+        <div class="event-card">
+          <div class="card-header-title">GESTIÓN BAJO PANDEMIA</div>
+          <ul class="event-list">
+            <li>Título 42 genera expulsiones hacia México.</li>
+            <li>Restricciones sanitarias y menor movilidad.</li>
+            <li>11 nov 2020, reforma para que NNA migrantes no sean alojados en estaciones migratorias.</li>
+            <li>26 abril instruye la salida inmediata de personas extranjeras albergadas en EM.</li>
+          </ul>
+          <div class="card-stats-box">
+            Solicitudes de asilo COMAR:<br/>
+            <span class="stat-val">41,329 (2020)</span>
+          </div>
+          <div class="card-footer-source">Fuente: SEGOB / COMAR</div>
+        </div>
+
+        <!-- 2021 MEXICO -->
+        <div class="event-card">
+          <div class="card-header-title">RÉCORD REFUGIO Y TRÁNSITO</div>
+          <ul class="event-list">
+            <li>Flujos altos desde Centroamérica y Caribe, destacado nacionales de Haití.</li>
+            <li>México se consolida como país de tránsito y destino.</li>
+            <li>Regularización por Actualización de Registro Migratorio ARM.</li>
+          </ul>
+          <div class="card-stats-box">
+            Solicitudes de asilo COMAR:<br/>
+            <span class="stat-val">131,448 (2021 récord)</span>
+          </div>
+          <div class="card-footer-source">Fuente: COMAR / ACNUR</div>
+        </div>
+
+        <!-- 2022 MEXICO -->
+        <div class="event-card">
+          <div class="card-header-title">COOPERACIÓN Y FIN DE MPP</div>
+          <ul class="event-list">
+            <li>25 octubre 2022 SRE informa fin de recepción bajo MPP.</li>
+            <li>Flujos regionales continúan altos, necesidad de atender orígenes (Venezuela, Cuba, Haití).</li>
+            <li>La respuesta posterior de EE UU con los programas de Parole.</li>
+            <li>Hasta 30,000 autorizaciones de viaje al mes.</li>
+          </ul>
+          <div class="card-stats-box">
+            Solicitudes de asilo COMAR:<br/>
+            <span class="stat-val">118,478 (2022)</span>
+          </div>
+          <div class="card-footer-source">Fuente: SRE / COMAR</div>
+        </div>
+
+        <!-- 2023 MEXICO -->
+        <div class="event-card">
+          <div class="card-header-title">PAÍS DE ESPERA CBP</div>
+          <ul class="event-list">
+            <li>Concentraciones en frontera sur, CDMX y ciudades fronterizas del norte.</li>
+            <li>12 mayo 2023 inicio de recepción de 1000 diarios de CNVH por 7 puntos.</li>
+            <li>Flujos migratorios desde El Darién tienen a México como destino de espera.</li>
+          </ul>
+          <div class="card-stats-box">
+            Solicitudes de asilo COMAR:<br/>
+            <span class="stat-val">140,982 (2023)</span>
+          </div>
+          <div class="card-footer-source">Fuente: COMAR / ACNUR</div>
+        </div>
+
+        <!-- 2024 MEXICO -->
+        <div class="event-card">
+          <div class="card-header-title">ADMINISTRACIÓN DEL FLUJO</div>
+          <ul class="event-list">
+            <li>23 agosto 2024: CBP One se expande a Chiapas y Tabasco.</li>
+            <li>26 Agosto 2024 Inicia Corredor Emergente de Movilidad Segura del INM.</li>
+            <li>Hacia puntos fronterizos donde EE.UU recibe a personas con cita CBP ONE.</li>
+            <li>Octubre 2024 México acepta vuelos diarios de repatriación.</li>
+          </ul>
+          <div class="card-stats-box">
+            Solicitudes de asilo COMAR:<br/>
+            <span class="stat-val">78,975 (2024)</span>
+          </div>
+          <div class="card-footer-source">Fuente: COMAR / INM</div>
+        </div>
+
+        <!-- 2025 MEXICO -->
+        <div class="event-card">
+          <div class="card-header-title">RETORNO Y PROTECCIÓN</div>
+          <ul class="event-list">
+            <li>20 enero 2025 termina corredor emergente asociado a CBP ONE.</li>
+            <li>21 enero 2025 inicia México te Abraza.</li>
+            <li>3 de febrero, EE UU pausa un mes la aplicación de aranceles tras un acuerdo bilateral.</li>
+          </ul>
+          <div class="card-stats-box">
+            Solicitudes de asilo COMAR:<br/>
+            <span class="stat-val">70,500 (2025)</span>
+          </div>
+          <div class="card-footer-source">Fuente: SEGOB / COMAR</div>
+        </div>
+
+        <!-- 2026 MEXICO -->
+        <div class="event-card">
+          <div class="card-header-title">RECEPCIÓN Y CONCENTRACIÓN</div>
+          <ul class="event-list">
+            <li>Octubre 2026 México vuelos de repatriación en 12 aeropuertos.</li>
+          </ul>
+          <div class="card-stats-box">
+            Solicitudes de asilo COMAR:<br/>
+            <span class="stat-val">S/D (2026)</span>
+          </div>
+          <div class="card-footer-source">Fuente: SEGOB / COMAR</div>
+        </div>
+      </div>
+
+      <!-- BOTTOM SECTION: ESTADÍSTICAS MIGRATORIAS BUTTONS & CHART -->
+      <div class="bottom-section">
+        <div class="stats-panel-header" id="statsPanelHeader">
+          <!-- Default Main Category View -->
+          <div id="panelMainView">
+            <div class="stats-panel-title">
+              <i class="fa-solid fa-chart-simple"></i> ESTADÍSTICAS MIGRATORIAS
+            </div>
+            <div class="button-grid">
+              <button class="stat-btn" onclick="selectCategory('ACCIONES DE CONTROL')">ACCIONES DE CONTROL</button>
+              <button class="stat-btn" onclick="selectCategory('ACCIONES DE RESCATES')">ACCIONES DE RESCATES</button>
+              <button class="stat-btn" onclick="selectCategory('ALOJADOS')">ALOJADOS</button>
+              <button class="stat-btn" onclick="selectCategory('RETORNO A SU PAÍS')">RETORNO A SU PAÍS</button>
+              <button class="stat-btn" onclick="selectCategory('REGULARIZACIÓN')">REGULARIZACIÓN</button>
+              <button class="stat-btn" onclick="selectCategory('REPATRIACIÓN')">REPATRIACIÓN</button>
+              <button class="stat-btn" onclick="selectCategory('INGRESOS AL PAÍS')">INGRESOS AL PAÍS</button>
+              <button class="stat-btn" onclick="selectCategory('RECAUDACIÓN')">RECAUDACIÓN</button>
+              <button class="stat-btn" onclick="selectCategory('PLANTILLA')">PLANTILLA</button>
+              <button class="stat-btn" onclick="selectCategory('COOPERACIÓN')">COOPERACIÓN</button>
+              <button class="stat-btn" onclick="selectCategory('NORMATIVIDAD')">NORMATIVIDAD</button>
+              <button class="stat-btn" onclick="selectCategory('DERECHOS HUMANOS')">DERECHOS HUMANOS</button>
+            </div>
+            <button class="stat-btn" id="btnSistemasMain" onclick="selectSistemas()" style="margin-top:8px; width:100%; background:var(--arena-alpha); border-color:var(--arena);">
+              <i class="fa-solid fa-server" style="margin-right:4px;"></i> SISTEMAS
+            </button>
+          </div>
+
+          <!-- Subcategory / Option View when a category is selected -->
+          <div id="panelSubView" style="display: none; height: 100%; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="stats-panel-title" style="font-size:16px; margin-bottom:10px;">
+                ESTADÍSTICAS MIGRATORIAS
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                <button class="stat-btn active-category" id="btnActiveCategory">ACCIONES DE CONTROL</button>
+                <button class="stat-btn btn-regreso" onclick="resetMainView()">
+                  <span class="btn-back-arrow"></span> BLOQUES
+                </button>
+              </div>
+              <div class="button-grid" style="margin-top: 10px;" id="subOptionsContainer">
+                <button class="stat-btn sub-option-btn active-sub" data-sub="encuentros" onclick="switchSubOption(this, 'encuentros')">ENCUENTROS</button>
+                <button class="stat-btn sub-option-btn" data-sub="extranjeros" onclick="switchSubOption(this, 'extranjeros')">EXTRANJEROS RECIBIDOS</button>
+                <button class="stat-btn sub-option-btn" data-sub="visitas" onclick="switchSubOption(this, 'visitas')">VISITAS DE VERIFICACIÓN</button>
+                <button class="stat-btn sub-option-btn" data-sub="acciones" onclick="switchSubOption(this, 'acciones')">ACCIONES DE VERIFICACIÓN</button>
+              </div>
+            </div>
+            <button class="stat-btn" id="btnSistemasSub" onclick="selectSistemas()" style="margin-top:8px; width:100%; background:var(--arena-alpha); border-color:var(--arena);">
+              <i class="fa-solid fa-server" style="margin-right:4px;"></i> SISTEMAS
+            </button>
+          </div>
+        </div>
+
+        <div class="bottom-chart-card">
+          <!-- Summary default view -->
+          <div id="summaryDefaultView">
+            <div style="font-family:'Bebas Neue', sans-serif; font-size:18px; letter-spacing:1px; margin-bottom:8px; color:var(--texto);">
+              <i class="fa-solid fa-circle-info" style="margin-right:6px; color:var(--rojo);"></i> RESUMEN DE INDICADORES Y RESTRICCIONES (2017 - 2026)
+            </div>
+            <p style="font-size:11px; line-height:1.6; color:var(--gris-oscuro);">
+              Esta matriz comparativa visualiza las medidas bilaterales y políticas migratorias adoptadas por <strong>Estados Unidos</strong> y <strong>México</strong> a lo largo del periodo 2017-2026. Selecciona cualquiera de las opciones en <strong>Estadísticas Migratorias</strong> para desplegar la gráfica interactiva comparativa sincronizada por años.
+            </p>
+          </div>
+
+          <!-- Chart View -->
+          <div id="chartDisplayView" style="display: none; height: 100%;">
+            <div class="chart-wrapper">
+              <div class="viajes-overlay-container" id="viajesOverlayContainer" style="display: none;">
+                <!-- Viajes cards will be rendered here dynamically per year -->
+              </div>
+              <canvas id="comparativoChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Sistemas Matrix View -->
+          <div id="sistemasDisplayView" style="display: none; height: 100%; width: 100%;">
+            <div class="sistemas-matrix-container">
+              <!-- Col 1: 2017 -->
+              <div class="sistemas-card">
+                <div class="sistemas-card-header">Flujo Migratorio – SIOM</div>
+                <div class="sistemas-card-list">
+                  <div class="sistemas-card-item">SAE</div>
+                  <div class="sistemas-card-item">Menores – SAM</div>
+                  <div class="sistemas-card-item">ALEP y APIS</div>
+                  <div class="sistemas-card-item">SIVAPAT – Consulta histórica</div>
+                  <div class="sistemas-card-item">VIRE</div>
+                  <div class="sistemas-card-item">SICATEM</div>
+                </div>
+              </div>
+
+              <!-- Col 2: 2018 -->
+              <div></div>
+
+              <!-- Col 3: 2019 -->
+              <div class="sistemas-card">
+                <div class="sistemas-card-header">SIIM – PE</div>
+                <div class="sistemas-card-list">
+                  <div class="sistemas-card-item">SIIM–CVM</div>
+                </div>
+              </div>
+
+              <!-- Col 4: 2020 -->
+              <div class="sistemas-card" style="justify-content: center; align-items: center; min-height: 50px;">
+                <div style="font-weight: 700; font-size: 11px; color: #2c2c2a; text-align: center; padding: 12px 4px;">PCI</div>
+              </div>
+
+              <!-- Col 5: 2021 -->
+              <div class="sistemas-card">
+                <div class="sistemas-card-header">SIIM – SIRENNA</div>
+                <div class="sistemas-card-list">
+                  <div class="sistemas-card-item">Portal de Servicios del INM y Pre-registro</div>
+                  <div class="sistemas-card-item">FMMD</div>
+                  <div class="sistemas-card-item">FMA v1<br/><span style="font-size:8px; font-weight:400; color:#555;">Filtro Migratorio Autónomo</span></div>
+                </div>
+              </div>
+
+              <!-- Col 6: 2022 -->
+              <div class="sistemas-card">
+                <div class="sistemas-card-header">Pagos en línea Pesca Deportiva</div>
+                <div class="sistemas-card-list">
+                  <div class="sistemas-card-item" style="padding: 16px 4px;">FMME Terrestre</div>
+                </div>
+              </div>
+
+              <!-- Col 7: 2023 -->
+              <div class="sistemas-card">
+                <div class="sistemas-card-header" style="background:#e0dacb;">
+                  FMA v. 2.0<br/>
+                  <span style="font-size:8.5px; font-weight:500; color:#444;">Filtros Migratorios Autónomos</span>
+                </div>
+                <div class="sistemas-card-list">
+                  <div class="sistemas-card-item" style="padding: 14px 4px;">Pago CBX</div>
+                </div>
+              </div>
+
+              <!-- Col 8: 2024 -->
+              <div class="sistemas-card">
+                <div class="sistemas-card-header">SIIM – Offline</div>
+                <div class="sistemas-card-list">
+                  <div class="sistemas-card-item">FEM</div>
+                  <div class="sistemas-card-item">PSM v 1.0<br/><span style="font-size:8px; font-weight:400; color:#555;">(Portal de Servicios Marítimos)</span></div>
+                  <div class="sistemas-card-item">FMA v. 2.0<br/><span style="font-size:8px; font-weight:400; color:#555;">Filtro Migratorio Autónomo</span></div>
+                </div>
+              </div>
+
+              <!-- Col 9: 2025 -->
+              <div class="sistemas-card">
+                <div class="sistemas-card-header">SIIM–CMI</div>
+                <div class="sistemas-card-list">
+                  <div class="sistemas-card-item">Llave MX</div>
+                  <div class="sistemas-card-item">PSM v2.0</div>
+                  <div class="sistemas-card-item">Formato SAM Segunda revisión</div>
+                  <div class="sistemas-card-item">FMA v. 2.0<br/><span style="font-size:8px; font-weight:400; color:#555;">Filtros Migratorios Autónomos</span></div>
+                  <div class="sistemas-card-item">Visa MX</div>
+                </div>
+              </div>
+
+              <!-- Col 10: 2026 -->
+              <div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      let currentChart = null;
+      let dbComparativoData = null;
+
+      // Fetch dynamic metrics data from Django DB
+      async function loadComparativoData() {
+        try {
+          const res = await fetch("{% url 'comparativo_data' %}");
+          const json = await res.json();
+          if (json.status === 'success') {
+            dbComparativoData = json.data;
+          }
+        } catch (e) {
+          console.warn("Could not load dynamic data from BD, using fallback dataset.", e);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadComparativoData();
+      });
+
+      // Mock Data (2017 to 2026) mapped directly to years grid
+      const yearsLabels = ['2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026'];
+
+      // Sub-options definitions per main category
+      const categorySubOptions = {
+        'ACCIONES DE CONTROL': [
+          { key: 'encuentros', label: 'ENCUENTROS' },
+          { key: 'extranjeros', label: 'EXTRANJEROS RECIBIDOS' },
+          { key: 'visitas', label: 'VISITAS DE VERIFICACIÓN' },
+          { key: 'acciones', label: 'ACCIONES DE VERIFICACIÓN' }
+        ],
+        'ACCIONES DE RESCATES': [
+          { key: 'rescates', label: 'RESCATES' },
+          { key: 'caravanas', label: 'CARAVANAS' },
+          { key: 'traslados', label: 'TRASLADOS DE NORTE A SUR' }
+        ],
+        'RETORNO A SU PAÍS': [
+          { key: 'retornos', label: 'TRASLADOS A SU PAÍS' }
+        ],
+        'RETORNO A SU PAIS': [
+          { key: 'retornos', label: 'TRASLADOS A SU PAÍS' }
+        ],
+        'INGRESOS AL PAÍS': [
+          { key: 'ingresos', label: 'INGRESOS AL PAÍS' }
+        ],
+        'INGRESOS AL PAIS': [
+          { key: 'ingresos', label: 'INGRESOS AL PAÍS' }
+        ],
+        'RECAUDACIÓN': [
+          { key: 'recaudacion', label: 'RECAUDACIÓN' }
+        ],
+        'RECAUDACION': [
+          { key: 'recaudacion', label: 'RECAUDACIÓN' }
+        ],
+        'PRESUPUESTO': [
+          { key: 'recaudacion', label: 'RECAUDACIÓN' }
+        ],
+        'PLANTILLA': [
+          { key: 'plantilla', label: 'PLANTILLA' }
+        ],
+        'PERSONAS REGULARIZADAS': [
+          { key: 'regularizados', label: 'PERSONAS REGULARIZADAS' }
+        ],
+        'REGULARIZACIÓN': [
+          { key: 'regularizados', label: 'PERSONAS REGULARIZADAS' }
+        ],
+        'REGULARIZACION': [
+          { key: 'regularizados', label: 'PERSONAS REGULARIZADAS' }
+        ],
+        'REPATRIADOS': [
+          { key: 'repatriados', label: 'REPATRIADOS' }
+        ],
+        'REPATRIACIÓN': [
+          { key: 'repatriados', label: 'REPATRIADOS' }
+        ],
+        'REPATRIACION': [
+          { key: 'repatriados', label: 'REPATRIADOS' }
+        ]
+      };
+      
+      const mockDataSets = {
+        'ACCIONES DE CONTROL': {
+          type: 'combo',
+          bars: [341519, 590693, 923632, 540649, 2011968, 2553540, 2526962, 1633542, 179638, 86476],
+          lineMex: [230661, 245728, 180477, 354463, 704092, 789142, 732511, 546089, 107327, 64450],
+          lineExt: [110858, 344965, 743155, 186186, 1307876, 1764398, 1794451, 1087453, 72300, 22026]
+        },
+        'ACCIONES DE RESCATES': {
+          type: 'rescates_traslados',
+          aereos: [0, 0, 0, 0, 0, 4318, 34509, 5864, 0, 0],
+          terrestres: [0, 0, 0, 0, 0, 5661, 70661, 18422, 7041, 0],
+          viajes: [
+            null, null, null, null, null,
+            { aereos: 36, terrestres: 142 },
+            { aereos: 260, terrestres: 1767 },
+            { aereos: 47, terrestres: 461 },
+            { aereos: 0, terrestres: 176 },
+            null
+          ]
+        },
+        'DEFAULT': {
+          type: 'combo',
+          bars: [250000, 380000, 520000, 300000, 800000, 1100000, 1050000, 750000, 140000, 60000],
+          lineMex: [150000, 220000, 300000, 190000, 480000, 650000, 610000, 430000, 85000, 40000],
+          lineExt: [100000, 160000, 220000, 110000, 320000, 450000, 440000, 320000, 55000, 20000]
+        }
+      };
+
+      function selectSistemas() {
+        // Highlight active Sistemas buttons in red
+        const btnMain = document.getElementById('btnSistemasMain');
+        const btnSub = document.getElementById('btnSistemasSub');
+        if (btnMain) {
+          btnMain.style.background = '#8b263e';
+          btnMain.style.color = '#ffffff';
+          btnMain.style.borderColor = '#6b1d30';
+        }
+        if (btnSub) {
+          btnSub.style.background = '#8b263e';
+          btnSub.style.color = '#ffffff';
+          btnSub.style.borderColor = '#6b1d30';
+        }
+
+        document.getElementById('summaryDefaultView').style.display = 'none';
+        document.getElementById('chartDisplayView').style.display = 'none';
+        document.getElementById('sistemasDisplayView').style.display = 'block';
+
+        if (currentChart) {
+          currentChart.destroy();
+          currentChart = null;
+        }
+      }
+
+      function selectCategory(categoryName) {
+        // Reset sistemas buttons style
+        resetSistemasBtnStyle();
+
+        document.getElementById('panelMainView').style.display = 'none';
+        const panelSubView = document.getElementById('panelSubView');
+        panelSubView.style.display = 'flex';
+        document.getElementById('btnActiveCategory').innerText = categoryName;
+
+        // Render sub-options dynamically
+        const subContainer = document.getElementById('subOptionsContainer');
+        subContainer.innerHTML = '';
+        
+        const subOpts = categorySubOptions[categoryName] || [
+          { key: 'opcion1', label: 'OPCIÓN 1' },
+          { key: 'opcion2', label: 'OPCIÓN 2' }
+        ];
+
+        subOpts.forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = `stat-btn sub-option-btn ${idx === 0 ? 'active-sub' : ''}`;
+          btn.dataset.sub = opt.key;
+          btn.innerText = opt.label;
+          btn.onclick = function() { switchSubOption(this, opt.key); };
+          if (idx === 0) {
+            btn.style.background = '#8b263e';
+            btn.style.color = '#ffffff';
+            btn.style.borderColor = '#6b1d30';
+          }
+          subContainer.appendChild(btn);
+        });
+
+        document.getElementById('summaryDefaultView').style.display = 'none';
+        document.getElementById('sistemasDisplayView').style.display = 'none';
+        document.getElementById('chartDisplayView').style.display = 'block';
+
+        renderComparativoChart(categoryName, subOpts[0].key);
+      }
+
+      function resetMainView() {
+        resetSistemasBtnStyle();
+
+        document.getElementById('panelSubView').style.display = 'none';
+        document.getElementById('panelMainView').style.display = 'block';
+
+        document.getElementById('chartDisplayView').style.display = 'none';
+        document.getElementById('sistemasDisplayView').style.display = 'none';
+        document.getElementById('summaryDefaultView').style.display = 'block';
+
+        if (currentChart) {
+          currentChart.destroy();
+          currentChart = null;
+        }
+      }
+
+      function resetSistemasBtnStyle() {
+        const btnMain = document.getElementById('btnSistemasMain');
+        const btnSub = document.getElementById('btnSistemasSub');
+        if (btnMain) {
+          btnMain.style.background = 'var(--arena-alpha)';
+          btnMain.style.color = 'var(--texto)';
+          btnMain.style.borderColor = 'var(--arena)';
+        }
+        if (btnSub) {
+          btnSub.style.background = 'var(--arena-alpha)';
+          btnSub.style.color = 'var(--texto)';
+          btnSub.style.borderColor = 'var(--arena)';
+        }
+      }
+
+      function switchSubOption(btnElement, subKey) {
+        document.querySelectorAll('.sub-option-btn').forEach(btn => {
+          btn.style.background = 'var(--fondo-card)';
+          btn.style.color = 'var(--texto)';
+          btn.style.borderColor = 'var(--borde)';
+        });
+        btnElement.style.background = '#8b263e';
+        btnElement.style.color = '#ffffff';
+        btnElement.style.borderColor = '#6b1d30';
+
+        const categoryName = document.getElementById('btnActiveCategory').innerText;
+        renderComparativoChart(categoryName, subKey);
+      }
+
+      function renderComparativoChart(categoryName, subKey = '') {
+        const ctx = document.getElementById('comparativoChart').getContext('2d');
+        if (currentChart) {
+          currentChart.destroy();
+        }
+
+        const overlayContainer = document.getElementById('viajesOverlayContainer');
+        overlayContainer.innerHTML = '';
+        overlayContainer.style.display = 'none';
+
+        const dataSrc = mockDataSets[categoryName] || mockDataSets['DEFAULT'];
+        const plugins = (typeof ChartDataLabels !== 'undefined') ? [ChartDataLabels] : [];
+
+        // Check if rendering Traslados / Rescates specialized grouped bar format
+        if (categoryName === 'ACCIONES DE RESCATES' && subKey === 'traslados') {
+          let aereosVals = [0, 0, 0, 0, 0, 4318, 34509, 5864, 0, 0];
+          let terrestresVals = [0, 0, 0, 0, 0, 5661, 70661, 18422, 7041, 0];
+          let viajesData = [
+            null, null, null, null, null,
+            { aereos: 36, terrestres: 142 },
+            { aereos: 260, terrestres: 1767 },
+            { aereos: 47, terrestres: 461 },
+            { aereos: 0, terrestres: 176 },
+            null
+          ];
+
+          if (dbComparativoData) {
+            const catData = dbComparativoData['TRASLADOS DE NORTE A SUR'] || dbComparativoData['TRASLADO DE NORTE A SUR'] || {};
+
+            const getSeriesByKeys = (possibleKeys) => {
+              for (const pk of possibleKeys) {
+                const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === pk.toUpperCase());
+                if (matchedKey && catData[matchedKey]) {
+                  return yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+                }
+              }
+              return null;
+            };
+
+            const dbAereoPers = getSeriesByKeys(['(AEREO) PERSONAS', 'AEREO PERSONAS', '(AÉREO) PERSONAS']);
+            const dbTerrPers = getSeriesByKeys(['(TERRESTRE) PERSONAS', 'TERRESTRE PERSONAS']);
+            const dbAereoViajes = getSeriesByKeys(['(VUELOS) VIAJES', 'VUELOS VIAJES', '(AEREO) VIAJES']);
+            const dbTerrViajes = getSeriesByKeys(['(TERRESTRE) VIAJES', 'TERRESTRE VIAJES']);
+
+            if (dbAereoPers) aereosVals = dbAereoPers;
+            if (dbTerrPers) terrestresVals = dbTerrPers;
+
+            if (dbAereoViajes || dbTerrViajes) {
+              viajesData = yearsLabels.map((y, idx) => {
+                const aVal = dbAereoViajes ? dbAereoViajes[idx] : 0;
+                const tVal = dbTerrViajes ? dbTerrViajes[idx] : 0;
+                if (aVal > 0 || tVal > 0) {
+                  return { aereos: aVal, terrestres: tVal };
+                }
+                return null;
+              });
+            }
+          }
+
+          // Render Viajes floating overlay cards
+          overlayContainer.style.display = 'grid';
+          viajesData.forEach(v => {
+            const cardDiv = document.createElement('div');
+            if (v) {
+              cardDiv.className = 'viajes-card';
+              cardDiv.innerHTML = `
+                <div class="viajes-card-header">VIAJES</div>
+                <div class="viajes-card-body">
+                  <div class="viajes-card-row">
+                    <span class="viajes-card-label">• Aéreos</span>
+                    <span class="viajes-card-val">${v.aereos.toLocaleString()}</span>
+                  </div>
+                  <div class="viajes-card-row">
+                    <span class="viajes-card-label">• Terrestres</span>
+                    <span class="viajes-card-val">${v.terrestres.toLocaleString()}</span>
+                  </div>
+                </div>
+              `;
+            }
+            overlayContainer.appendChild(cardDiv);
+          });
+
+          currentChart = new Chart(ctx, {
+            type: 'bar',
+            plugins: plugins,
+            data: {
+              labels: yearsLabels,
+              datasets: [
+                {
+                  label: 'AEREOS',
+                  data: aereosVals,
+                  backgroundColor: '#1d3557', // Dark navy blue
+                  borderColor: '#1d3557',
+                  borderWidth: 1,
+                  barPercentage: 0.7,
+                  categoryPercentage: 0.6,
+                  datalabels: {
+                    align: 'top',
+                    anchor: 'end',
+                    color: '#1d3557',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (val) => val > 0 ? val.toLocaleString() : '0'
+                  }
+                },
+                {
+                  label: 'TERRESTRES',
+                  data: terrestresVals,
+                  backgroundColor: '#7d7d7d', // Solid dark grey
+                  borderColor: '#7d7d7d',
+                  borderWidth: 1,
+                  barPercentage: 0.7,
+                  categoryPercentage: 0.6,
+                  datalabels: {
+                    align: 'top',
+                    anchor: 'end',
+                    color: '#2c2c2a',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (val) => val > 0 ? val.toLocaleString() : (val === 0 ? '' : '')
+                  }
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 60, // Space for viajes overlay cards
+                  bottom: 5,
+                  left: 10,
+                  right: 10
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    boxWidth: 10,
+                    boxHeight: 10,
+                    font: { size: 11, weight: 'bold', family: 'DM Sans' },
+                    usePointStyle: true,
+                    pointStyle: 'rect'
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: true,
+                    color: '#d4d0c4',
+                    lineDash: [3, 3]
+                  },
+                  ticks: { display: false }
+                },
+                y: {
+                  display: false,
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+
+        } else if (subKey === 'extranjeros') {
+          // EXTRANJEROS RECIBIDOS: Only show ENC. - EXT series per year
+          let extVals = [110858, 344965, 743155, 186186, 1307876, 1764398, 1794451, 1087453, 72300, 22026];
+
+          if (dbComparativoData) {
+            const catData = dbComparativoData['EXTRANJEROS RECIBIDO'] || dbComparativoData['EXTRANJEROS RECIBIDOS'] || dbComparativoData['ENC.'] || dbComparativoData['ACCIONES DE CONTROL'] || {};
+            
+            const getSeriesByKeys = (possibleKeys) => {
+              for (const pk of possibleKeys) {
+                const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === pk.toUpperCase());
+                if (matchedKey && catData[matchedKey]) {
+                  return yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+                }
+              }
+              return null;
+            };
+
+            const dbExt = getSeriesByKeys(['TOTAL EXT REC', 'EXT.', 'EXT', 'ENC. - EXT', 'EXTRANJEROS', 'TOTAL']);
+            if (dbExt) extVals = dbExt;
+          }
+
+          currentChart = new Chart(ctx, {
+            type: 'bar',
+            plugins: plugins,
+            data: {
+              labels: yearsLabels,
+              datasets: [
+                {
+                  type: 'bar',
+                  label: 'EXTRANJEROS RECIBIDOS (ENC. - EXT)',
+                  data: extVals,
+                  backgroundColor: '#8b263e',
+                  borderColor: '#6b1d30',
+                  borderWidth: 1,
+                  barPercentage: 0.55,
+                  categoryPercentage: 0.9,
+                  datalabels: {
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#8b263e',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 25,
+                  bottom: 5,
+                  left: 10,
+                  right: 10
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    boxWidth: 12,
+                    boxHeight: 12,
+                    font: { size: 10, weight: 'bold', family: 'DM Sans' }
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: true,
+                    color: '#d4d0c4',
+                    lineDash: [3, 3]
+                  },
+                  ticks: { display: false }
+                },
+                y: {
+                  display: false,
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+
+        } else if (categoryName === 'ACCIONES DE RESCATES' && (subKey === 'rescates' || subKey === '')) {
+          // RESCATES: Show TOTAL RES (bars) and REINCIDENCIA (line) per year
+          let resVals = [120000, 210000, 310000, 180000, 450000, 620000, 580000, 410000, 95000, 45000];
+          let reinVals = [15000, 28000, 42000, 22000, 60000, 85000, 79000, 52000, 12000, 600];
+
+          if (dbComparativoData) {
+            const catData = dbComparativoData['RESCATES'] || dbComparativoData['ACCIONES DE RESCATES'] || {};
+            
+            const getSeriesByKeys = (possibleKeys) => {
+              for (const pk of possibleKeys) {
+                const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === pk.toUpperCase());
+                if (matchedKey && catData[matchedKey]) {
+                  return yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+                }
+              }
+              return null;
+            };
+
+            const dbRes = getSeriesByKeys(['TOTAL RES', 'TOTAL RESCATES', 'RESCATES', 'TOTAL']);
+            const dbRein = getSeriesByKeys(['REINCIDENCIA', 'REINCIDENCIAS']);
+
+            if (dbRes) resVals = dbRes;
+            if (dbRein) reinVals = dbRein;
+          }
+
+          currentChart = new Chart(ctx, {
+            type: 'bar',
+            plugins: plugins,
+            data: {
+              labels: yearsLabels,
+              datasets: [
+                {
+                  type: 'line',
+                  label: 'REINCIDENCIA',
+                  data: reinVals,
+                  borderColor: '#1a1a1a',
+                  backgroundColor: '#1a1a1a',
+                  borderWidth: 2.5,
+                  pointRadius: 4.5,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 1,
+                  datalabels: {
+                    align: 'top',
+                    anchor: 'center',
+                    color: '#1a1a1a',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'bar',
+                  label: 'TOTAL RES',
+                  data: resVals,
+                  backgroundColor: '#8b263e',
+                  borderColor: '#6b1d30',
+                  borderWidth: 1,
+                  barPercentage: 0.55,
+                  categoryPercentage: 0.9,
+                  order: 2,
+                  datalabels: {
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#8b263e',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 25,
+                  bottom: 5,
+                  left: 10,
+                  right: 10
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    boxWidth: 12,
+                    boxHeight: 12,
+                    font: { size: 10, weight: 'bold', family: 'DM Sans' }
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: true,
+                    color: '#d4d0c4',
+                    lineDash: [3, 3]
+                  },
+                  ticks: { display: false }
+                },
+                y: {
+                  display: false,
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+
+        } else if (subKey === 'caravanas') {
+          // CARAVANAS: Same design as Rescates (PERSONAS as Guinda Bars + NUM. CARAVANAS as Black Line)
+          let caravanasNumVals = [0, 1, 4, 3, 12, 18, 25, 14, 6, 2];
+          let personasVals = [0, 8000, 24000, 15000, 65000, 92000, 145000, 88000, 35000, 12000];
+
+          if (dbComparativoData) {
+            const catData = dbComparativoData['CARAVANAS'] || {};
+            
+            const getSeriesByKeys = (possibleKeys) => {
+              for (const pk of possibleKeys) {
+                const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === pk.toUpperCase());
+                if (matchedKey && catData[matchedKey]) {
+                  return yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+                }
+              }
+              return null;
+            };
+
+            const dbNum = getSeriesByKeys(['NUM CARAVANAS', 'CARAVANAS', 'NUMERO DE CARAVANAS']);
+            const dbPers = getSeriesByKeys(['PERSONAS', 'PERSONAS CARAVANAS', 'TOTAL PERSONAS']);
+
+            if (dbNum) caravanasNumVals = dbNum;
+            if (dbPers) personasVals = dbPers;
+          }
+
+          currentChart = new Chart(ctx, {
+            type: 'bar',
+            plugins: plugins,
+            data: {
+              labels: yearsLabels,
+              datasets: [
+                {
+                  type: 'line',
+                  label: 'NUM. CARAVANAS',
+                  data: caravanasNumVals,
+                  borderColor: '#1a1a1a',
+                  backgroundColor: '#1a1a1a',
+                  borderWidth: 2.5,
+                  pointRadius: 4.5,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  yAxisID: 'y2',
+                  order: 1,
+                  datalabels: {
+                    align: 'top',
+                    anchor: 'center',
+                    color: '#1a1a1a',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? `${val} car.` : ''
+                  }
+                },
+                {
+                  type: 'bar',
+                  label: 'PERSONAS',
+                  data: personasVals,
+                  backgroundColor: '#8b263e',
+                  borderColor: '#6b1d30',
+                  borderWidth: 1,
+                  yAxisID: 'y1',
+                  barPercentage: 0.55,
+                  categoryPercentage: 0.9,
+                  order: 2,
+                  datalabels: {
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#8b263e',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 25,
+                  bottom: 5,
+                  left: 10,
+                  right: 10
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    boxWidth: 12,
+                    boxHeight: 12,
+                    font: { size: 10, weight: 'bold', family: 'DM Sans' }
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: true,
+                    color: '#d4d0c4',
+                    lineDash: [3, 3]
+                  },
+                  ticks: { display: false }
+                },
+                y1: {
+                  display: false,
+                  grid: { display: false }
+                },
+                y2: {
+                  display: false,
+                  position: 'right',
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+
+        } else if (subKey === 'retornos' || categoryName.includes('RETORNO')) {
+          // RETORNO A SU PAIS / TRASLADOS A SU PAIS: PERSONAS (Guinda Bars) + VIAJES (Black Line with Y2 axis)
+          let personasVals = [0, 0, 0, 0, 33640, 90765, 102602, 39152, 19498, 10085];
+          let viajesVals = [0, 0, 0, 0, 673, 2255, 2131, 987, 494, 465];
+
+          if (dbComparativoData) {
+            const catData = dbComparativoData['TRASLADOS A SU PAIS'] || dbComparativoData['TRASLADOS A SU PAÍS'] || dbComparativoData['RETORNO A SU PAÍS'] || dbComparativoData['RETORNO A SU PAIS'] || {};
+            
+            const getSeriesByKeys = (possibleKeys) => {
+              for (const pk of possibleKeys) {
+                const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === pk.toUpperCase());
+                if (matchedKey && catData[matchedKey]) {
+                  return yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+                }
+              }
+              return null;
+            };
+
+            const dbPers = getSeriesByKeys(['PERSONAS', 'PERSONAS TRASLADOS', 'TOTAL PERSONAS']);
+            const dbViajes = getSeriesByKeys(['VIAJES', 'TOTAL VIAJES', 'NUM VIAJES']);
+
+            if (dbPers) personasVals = dbPers;
+            if (dbViajes) viajesVals = dbViajes;
+          }
+
+          currentChart = new Chart(ctx, {
+            type: 'bar',
+            plugins: plugins,
+            data: {
+              labels: yearsLabels,
+              datasets: [
+                {
+                  type: 'line',
+                  label: 'VIAJES',
+                  data: viajesVals,
+                  borderColor: '#1a1a1a',
+                  backgroundColor: '#1a1a1a',
+                  borderWidth: 2.5,
+                  pointRadius: 4.5,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  yAxisID: 'y2',
+                  order: 1,
+                  datalabels: {
+                    align: 'top',
+                    anchor: 'center',
+                    color: '#1a1a1a',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? `${val.toLocaleString()} via.` : ''
+                  }
+                },
+                {
+                  type: 'bar',
+                  label: 'PERSONAS',
+                  data: personasVals,
+                  backgroundColor: '#8b263e',
+                  borderColor: '#6b1d30',
+                  borderWidth: 1,
+                  yAxisID: 'y1',
+                  barPercentage: 0.55,
+                  categoryPercentage: 0.9,
+                  order: 2,
+                  datalabels: {
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#8b263e',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 25,
+                  bottom: 5,
+                  left: 10,
+                  right: 10
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    boxWidth: 12,
+                    boxHeight: 12,
+                    font: { size: 10, weight: 'bold', family: 'DM Sans' }
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: true,
+                    color: '#d4d0c4',
+                    lineDash: [3, 3]
+                  },
+                  ticks: { display: false }
+                },
+                y1: {
+                  display: false,
+                  grid: { display: false }
+                },
+                y2: {
+                  display: false,
+                  position: 'right',
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+
+        } else if (subKey === 'ingresos' || categoryName.includes('INGRESOS')) {
+          // INGRESOS AL PAIS: TOTAL INGRESOS (bars) + AEREO (line), TERRESTRE (line), MARITIMO (line)
+          let totalIngresosVals = [37335994, 39312798, 36914940, 15189119, 24991864, 39222998, 43759411, 46056710, 48999837, 29219280];
+          let aereoVals = [23792393, 25201818, 25800081, 10621389, 19179897, 26955457, 29570677, 31036656, 31194609, 18045492];
+          let maritimoVals = [8229893, 8761357, 5849613, 1764735, 1906334, 7127249, 9149778, 10135559, 11908096, 7558545];
+          let terrestreVals = [5313708, 5349623, 5265246, 2802995, 3905633, 5140292, 5038956, 4884495, 5897132, 3615243];
+
+          if (dbComparativoData) {
+            const catData = dbComparativoData['INGRESOS AL PAIS'] || dbComparativoData['INGRESOS AL PAÍS'] || {};
+            
+            const getSeriesByKeys = (possibleKeys) => {
+              for (const pk of possibleKeys) {
+                const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === pk.toUpperCase());
+                if (matchedKey && catData[matchedKey]) {
+                  return yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+                }
+              }
+              return null;
+            };
+
+            const dbTotal = getSeriesByKeys(['TOTAL INGRESOS', 'TOTAL INGRESOS AL PAIS', 'TOTAL']);
+            const dbAereo = getSeriesByKeys(['AÉREO', 'AEREO', 'VIA AEREA']);
+            const dbMaritimo = getSeriesByKeys(['MARÍTIMOS', 'MARITIMOS', 'MARITIMO']);
+            const dbTerrestre = getSeriesByKeys(['TERRESTRE', 'VIA TERRESTRE']);
+
+            if (dbTotal) totalIngresosVals = dbTotal;
+            if (dbAereo) aereoVals = dbAereo;
+            if (dbMaritimo) maritimoVals = dbMaritimo;
+            if (dbTerrestre) terrestreVals = dbTerrestre;
+          }
+
+          currentChart = new Chart(ctx, {
+            type: 'bar',
+            plugins: plugins,
+            data: {
+              labels: yearsLabels,
+              datasets: [
+                {
+                  type: 'line',
+                  label: 'AÉREO',
+                  data: aereoVals,
+                  borderColor: '#8b263e',
+                  backgroundColor: '#8b263e',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 1,
+                  datalabels: {
+                    align: 'top',
+                    anchor: 'center',
+                    color: '#8b263e',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? (val / 1000000).toFixed(1) + 'M' : ''
+                  }
+                },
+                {
+                  type: 'line',
+                  label: 'MARÍTIMO',
+                  data: maritimoVals,
+                  borderColor: '#1d3557',
+                  backgroundColor: '#1d3557',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 2,
+                  datalabels: {
+                    align: 'center',
+                    anchor: 'center',
+                    color: '#1d3557',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? (val / 1000000).toFixed(1) + 'M' : ''
+                  }
+                },
+                {
+                  type: 'line',
+                  label: 'TERRESTRE',
+                  data: terrestreVals,
+                  borderColor: '#1a1a1a',
+                  backgroundColor: '#1a1a1a',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 3,
+                  datalabels: {
+                    align: 'bottom',
+                    anchor: 'center',
+                    color: '#1a1a1a',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? (val / 1000000).toFixed(1) + 'M' : ''
+                  }
+                },
+                {
+                  type: 'bar',
+                  label: 'TOTAL INGRESOS',
+                  data: totalIngresosVals,
+                  backgroundColor: 'rgba(212, 208, 196, 0.75)',
+                  borderColor: '#a39e8c',
+                  borderWidth: 1,
+                  barPercentage: 0.55,
+                  categoryPercentage: 0.9,
+                  order: 4,
+                  datalabels: {
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#2c2c2a',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (val) => val ? (val / 1000000).toFixed(1) + 'M' : ''
+                  }
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 25,
+                  bottom: 5,
+                  left: 10,
+                  right: 10
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    boxWidth: 12,
+                    boxHeight: 12,
+                    font: { size: 10, weight: 'bold', family: 'DM Sans' }
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: true,
+                    color: '#d4d0c4',
+                    lineDash: [3, 3]
+                  },
+                  ticks: { display: false }
+                },
+                y: {
+                  display: false,
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+
+        } else if (subKey === 'recaudacion' || categoryName.includes('RECAUDA') || categoryName.includes('PRESUPUESTO')) {
+          // RECAUDACION / PRESUPUESTO: RECAUDADO (bars) + PARTICIPABLE (line) + EJERCIDO (line)
+          let recaudadoVals = [10510350211, 12490559529, 12861346650, 6857517029, 11994533863, 18829993481, 21759213878, 23883695693, 28109705909, 19596179745];
+          let participableVals = [4924132507, 5919578206, 6241712461, 3690628715, 7107018491, 10666090399, 11993652630, 11244749109, 11823148863, 7776892842];
+          let ejercidoVals = [5034698437, 6015833066, 4903865412, 5475256121, 8403529434, 8158153485, 5568369300, 10795922541, 6781267222, 4219526189];
+
+          if (dbComparativoData) {
+            const catData = dbComparativoData['PRESUPUESTO'] || dbComparativoData['RECAUDACIÓN'] || dbComparativoData['RECAUDACION'] || {};
+            
+            const getSeriesByKeys = (possibleKeys) => {
+              for (const pk of possibleKeys) {
+                const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === pk.toUpperCase());
+                if (matchedKey && catData[matchedKey]) {
+                  return yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+                }
+              }
+              return null;
+            };
+
+            const dbRecaudado = getSeriesByKeys(['RECAUDADO', 'TOTAL RECAUDADO', 'RECAUDACION']);
+            const dbParticipable = getSeriesByKeys(['PARTICIPABLE', 'PRESUPUESTO PARTICIPABLE']);
+            const dbEjercido = getSeriesByKeys(['EJERCIDO', 'PRESUPUESTO EJERCIDO']);
+
+            if (dbRecaudado) recaudadoVals = dbRecaudado;
+            if (dbParticipable) participableVals = dbParticipable;
+            if (dbEjercido) ejercidoVals = dbEjercido;
+          }
+
+          // Helper to format currency numbers cleanly (e.g., $10.5B or $10,510M)
+          const formatCurrencyShort = (val) => {
+            if (!val) return '';
+            if (val >= 1000000000) {
+              return '$' + (val / 1000000000).toFixed(1) + 'B';
+            } else if (val >= 1000000) {
+              return '$' + (val / 1000000).toFixed(0) + 'M';
+            }
+            return '$' + val.toLocaleString();
+          };
+
+          currentChart = new Chart(ctx, {
+            type: 'bar',
+            plugins: plugins,
+            data: {
+              labels: yearsLabels,
+              datasets: [
+                {
+                  type: 'line',
+                  label: 'PARTICIPABLE',
+                  data: participableVals,
+                  borderColor: '#8b263e',
+                  backgroundColor: '#8b263e',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 1,
+                  datalabels: {
+                    align: 'top',
+                    anchor: 'center',
+                    color: '#8b263e',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => formatCurrencyShort(val)
+                  }
+                },
+                {
+                  type: 'line',
+                  label: 'EJERCIDO',
+                  data: ejercidoVals,
+                  borderColor: '#1a1a1a',
+                  backgroundColor: '#1a1a1a',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 2,
+                  datalabels: {
+                    align: 'bottom',
+                    anchor: 'center',
+                    color: '#1a1a1a',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => formatCurrencyShort(val)
+                  }
+                },
+                {
+                  type: 'bar',
+                  label: 'RECAUDADO',
+                  data: recaudadoVals,
+                  backgroundColor: 'rgba(212, 208, 196, 0.75)',
+                  borderColor: '#a39e8c',
+                  borderWidth: 1,
+                  barPercentage: 0.55,
+                  categoryPercentage: 0.9,
+                  order: 3,
+                  datalabels: {
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#2c2c2a',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (val) => formatCurrencyShort(val)
+                  }
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 25,
+                  bottom: 5,
+                  left: 10,
+                  right: 10
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    boxWidth: 12,
+                    boxHeight: 12,
+                    font: { size: 10, weight: 'bold', family: 'DM Sans' }
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: $${ctx.raw.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: true,
+                    color: '#d4d0c4',
+                    lineDash: [3, 3]
+                  },
+                  ticks: { display: false }
+                },
+                y: {
+                  display: false,
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+
+        } else if (subKey === 'plantilla' || categoryName.includes('PLANTILLA')) {
+          // PLANTILLA: PRESUPUESTO (Bars on secondary axis y2) + AUTORIZADA, ACTIVA, EVENTUALES (Lines on axis y1)
+          let presupuestoVals = [1593799772, 1642619104, 1446379778, 1468856346, 1530370714, 1643791170, 1811558641, 2011312853, 2085740746, 987949633];
+          let autorizadaVals = [5777, 5720, 5656, 5655, 5656, 5656, 5656, 5655, 5655, 5655];
+          let activaVals = [5421, 5196, 5030, 5043, 5061, 4878, 5211, 5350, 5471, 5324];
+          let eventualesVals = [0, 0, 98, 98, 98, 98, 278, 278, 435, 1476];
+
+          if (dbComparativoData) {
+            const catData = dbComparativoData['PLANTILLA'] || {};
+            
+            const getSeriesByKeys = (possibleKeys) => {
+              for (const pk of possibleKeys) {
+                const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === pk.toUpperCase());
+                if (matchedKey && catData[matchedKey]) {
+                  return yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+                }
+              }
+              return null;
+            };
+
+            const dbPres = getSeriesByKeys(['PRESUPUESTO', 'PRESUPUESTO PLANTILLA', 'TOTAL PRESUPUESTO']);
+            const dbAut = getSeriesByKeys(['AUTORIZADA', 'AUTORIZADAS']);
+            const dbAct = getSeriesByKeys(['ACTIVA', 'ACTIVAS']);
+            const dbEve = getSeriesByKeys(['EVENTUALES', 'EVENTUAL']);
+
+            if (dbPres) presupuestoVals = dbPres;
+            if (dbAut) autorizadaVals = dbAut;
+            if (dbAct) activaVals = dbAct;
+            if (dbEve) eventualesVals = dbEve;
+          }
+
+          const formatPresupuestoShort = (val) => {
+            if (!val) return '';
+            if (val >= 1000000000) {
+              return '$' + (val / 1000000000).toFixed(2) + 'B';
+            } else if (val >= 1000000) {
+              return '$' + (val / 1000000).toFixed(0) + 'M';
+            }
+            return '$' + val.toLocaleString();
+          };
+
+          currentChart = new Chart(ctx, {
+            type: 'bar',
+            plugins: plugins,
+            data: {
+              labels: yearsLabels,
+              datasets: [
+                {
+                  type: 'line',
+                  label: 'AUTORIZADA',
+                  data: autorizadaVals,
+                  borderColor: '#8b263e',
+                  backgroundColor: '#8b263e',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  yAxisID: 'y1',
+                  order: 1,
+                  datalabels: {
+                    align: 'top',
+                    anchor: 'center',
+                    color: '#8b263e',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'line',
+                  label: 'ACTIVA',
+                  data: activaVals,
+                  borderColor: '#1d3557',
+                  backgroundColor: '#1d3557',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  yAxisID: 'y1',
+                  order: 2,
+                  datalabels: {
+                    align: 'center',
+                    anchor: 'center',
+                    color: '#1d3557',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'line',
+                  label: 'EVENTUALES',
+                  data: eventualesVals,
+                  borderColor: '#1a1a1a',
+                  backgroundColor: '#1a1a1a',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  yAxisID: 'y1',
+                  order: 3,
+                  datalabels: {
+                    align: 'bottom',
+                    anchor: 'center',
+                    color: '#1a1a1a',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'bar',
+                  label: 'PRESUPUESTO',
+                  data: presupuestoVals,
+                  backgroundColor: 'rgba(212, 208, 196, 0.75)',
+                  borderColor: '#a39e8c',
+                  borderWidth: 1,
+                  yAxisID: 'y2',
+                  barPercentage: 0.55,
+                  categoryPercentage: 0.9,
+                  order: 4,
+                  datalabels: {
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#7a7657',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => formatPresupuestoShort(val)
+                  }
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 25,
+                  bottom: 5,
+                  left: 10,
+                  right: 10
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    boxWidth: 12,
+                    boxHeight: 12,
+                    font: { size: 10, weight: 'bold', family: 'DM Sans' }
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  callbacks: {
+                    label: (ctx) => ctx.dataset.label === 'PRESUPUESTO' ? `${ctx.dataset.label}: $${ctx.raw.toLocaleString()}` : `${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: true,
+                    color: '#d4d0c4',
+                    lineDash: [3, 3]
+                  },
+                  ticks: { display: false }
+                },
+                y1: {
+                  display: false,
+                  grid: { display: false }
+                },
+                y2: {
+                  display: false,
+                  position: 'right',
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+        } else if (subKey === 'regularizados' || categoryName.includes('REGULARIZA')) {
+          // PERSONAS REGULARIZADAS: TOTAL PERSONAS REGULARIZADAS (bars) + TRH, UNIDAD FAMILIAR, DOCUMENTO VENCIDO (lines)
+          let totalRegVals = [5726, 36008, 66153, 57994, 117429, 168226, 166152, 59488, 52404, 24761];
+          let trhVals = [0, 22168, 52279, 46079, 99600, 144342, 141386, 30600, 32035, 13311];
+          let ufVals = [0, 12200, 11413, 10322, 14508, 22350, 23491, 27037, 18781, 10538];
+          let docVencVals = [0, 1640, 2461, 1593, 3321, 1534, 1275, 1851, 1588, 912];
+
+          if (dbComparativoData) {
+            const catData = dbComparativoData['PERSONAS REGULARIZADAS'] || dbComparativoData['REGULARIZACION'] || dbComparativoData['REGULARIZACIÓN'] || {};
+            
+            const getSeriesByKeys = (possibleKeys) => {
+              for (const pk of possibleKeys) {
+                const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === pk.toUpperCase());
+                if (matchedKey && catData[matchedKey]) {
+                  return yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+                }
+              }
+              return null;
+            };
+
+            const dbTotal = getSeriesByKeys(['TOTAL PERSONAS REGULARIZADAS', 'TOTAL REGULARIZADAS', 'TOTAL']);
+            const dbTrh = getSeriesByKeys(['TRH']);
+            const dbUf = getSeriesByKeys(['UNIDAD FAMILIAR']);
+            const dbDoc = getSeriesByKeys(['DOCUMENTO VENCIDO']);
+
+            if (dbTotal) totalRegVals = dbTotal;
+            if (dbTrh) trhVals = dbTrh;
+            if (dbUf) ufVals = dbUf;
+            if (dbDoc) docVencVals = dbDoc;
+          }
+
+          currentChart = new Chart(ctx, {
+            type: 'bar',
+            plugins: plugins,
+            data: {
+              labels: yearsLabels,
+              datasets: [
+                {
+                  type: 'line',
+                  label: 'TRH',
+                  data: trhVals,
+                  borderColor: '#8b263e',
+                  backgroundColor: '#8b263e',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 1,
+                  datalabels: {
+                    align: 'top',
+                    anchor: 'center',
+                    color: '#8b263e',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'line',
+                  label: 'UNIDAD FAMILIAR',
+                  data: ufVals,
+                  borderColor: '#1d3557',
+                  backgroundColor: '#1d3557',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 2,
+                  datalabels: {
+                    align: 'center',
+                    anchor: 'center',
+                    color: '#1d3557',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'line',
+                  label: 'DOC. VENCIDO',
+                  data: docVencVals,
+                  borderColor: '#1a1a1a',
+                  backgroundColor: '#1a1a1a',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 3,
+                  datalabels: {
+                    align: 'bottom',
+                    anchor: 'center',
+                    color: '#1a1a1a',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'bar',
+                  label: 'TOTAL REGULARIZADAS',
+                  data: totalRegVals,
+                  backgroundColor: 'rgba(212, 208, 196, 0.75)',
+                  borderColor: '#a39e8c',
+                  borderWidth: 1,
+                  barPercentage: 0.55,
+                  categoryPercentage: 0.9,
+                  order: 4,
+                  datalabels: {
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#2c2c2a',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 25,
+                  bottom: 5,
+                  left: 10,
+                  right: 10
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    boxWidth: 12,
+                    boxHeight: 12,
+                    font: { size: 10, weight: 'bold', family: 'DM Sans' }
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: true,
+                    color: '#d4d0c4',
+                    lineDash: [3, 3]
+                  },
+                  ticks: { display: false }
+                },
+                y: {
+                  display: false,
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+
+        } else if (subKey === 'repatriados' || categoryName.includes('REPATRIA')) {
+          // REPATRIADOS: TOTAL REPATRIADOS (bars) + ADULTOS, NNA ACOMPAÑADOS, NNA NO ACOMPAÑADOS (lines)
+          let totalRepatVals = [167064, 203669, 211241, 184402, 160689, 258000, 214838, 206232, 160192, 91383];
+          let adultosVals = [158152, 192832, 198505, 171852, 137859, 233045, 189872, 175912, 152195, 88014];
+          let nnaAcompVals = [1539, 1250, 2224, 3119, 4509, 5005, 9843, 17993, 2521, 740];
+          let nnaNoAcompVals = [7373, 9587, 10512, 9431, 18321, 19950, 15123, 12327, 5476, 2629];
+
+          if (dbComparativoData) {
+            const catData = dbComparativoData['REPATRIADOS'] || dbComparativoData['REPATRIACIÓN'] || dbComparativoData['REPATRIACION'] || {};
+            
+            const getSeriesByKeys = (possibleKeys) => {
+              for (const pk of possibleKeys) {
+                const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === pk.toUpperCase());
+                if (matchedKey && catData[matchedKey]) {
+                  return yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+                }
+              }
+              return null;
+            };
+
+            const dbTotal = getSeriesByKeys(['TOTAL REPATRIADOS', 'TOTAL', 'TOTAL REPATRIACION']);
+            const dbAdultos = getSeriesByKeys(['ADULTOS']);
+            const dbAcomp = getSeriesByKeys(['NNA ACOMPAÑADOS', 'NNA ACOMPAÑADO']);
+            const dbNoAcomp = getSeriesByKeys(['NNA NO ACOMPAÑADOS', 'NNA NO ACOMPAÑADO']);
+
+            if (dbTotal) totalRepatVals = dbTotal;
+            if (dbAdultos) adultosVals = dbAdultos;
+            if (dbAcomp) nnaAcompVals = dbAcomp;
+            if (dbNoAcomp) nnaNoAcompVals = dbNoAcomp;
+          }
+
+          currentChart = new Chart(ctx, {
+            type: 'bar',
+            plugins: plugins,
+            data: {
+              labels: yearsLabels,
+              datasets: [
+                {
+                  type: 'line',
+                  label: 'ADULTOS',
+                  data: adultosVals,
+                  borderColor: '#8b263e',
+                  backgroundColor: '#8b263e',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 1,
+                  datalabels: {
+                    align: 'top',
+                    anchor: 'center',
+                    color: '#8b263e',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'line',
+                  label: 'NNA NO ACOMPAÑADOS',
+                  data: nnaNoAcompVals,
+                  borderColor: '#1d3557',
+                  backgroundColor: '#1d3557',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 2,
+                  datalabels: {
+                    align: 'center',
+                    anchor: 'center',
+                    color: '#1d3557',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'line',
+                  label: 'NNA ACOMPAÑADOS',
+                  data: nnaAcompVals,
+                  borderColor: '#1a1a1a',
+                  backgroundColor: '#1a1a1a',
+                  borderWidth: 2.5,
+                  pointRadius: 4,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 3,
+                  datalabels: {
+                    align: 'bottom',
+                    anchor: 'center',
+                    color: '#1a1a1a',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'bar',
+                  label: 'TOTAL REPATRIADOS',
+                  data: totalRepatVals,
+                  backgroundColor: 'rgba(212, 208, 196, 0.75)',
+                  borderColor: '#a39e8c',
+                  borderWidth: 1,
+                  barPercentage: 0.55,
+                  categoryPercentage: 0.9,
+                  order: 4,
+                  datalabels: {
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#2c2c2a',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 25,
+                  bottom: 5,
+                  left: 10,
+                  right: 10
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    boxWidth: 12,
+                    boxHeight: 12,
+                    font: { size: 10, weight: 'bold', family: 'DM Sans' }
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: true,
+                    color: '#d4d0c4',
+                    lineDash: [3, 3]
+                  },
+                  ticks: { display: false }
+                },
+                y: {
+                  display: false,
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+
+        } else {
+          // Standard combo bar/line rendering (e.g. ENCUENTROS)
+          let barVals = dataSrc.bars || [250000, 380000, 520000, 300000, 800000, 1100000, 1050000, 750000, 140000, 60000];
+          let mexVals = dataSrc.lineMex || [150000, 220000, 300000, 190000, 480000, 650000, 610000, 430000, 85000, 40000];
+          let extVals = dataSrc.lineExt || [100000, 160000, 220000, 110000, 320000, 450000, 440000, 320000, 55000, 20000];
+
+          // If dbComparativoData is available, populate values dynamically from DB for the category / sub-option
+          if (dbComparativoData) {
+            // Find key matching ENC / ACCIONES DE CONTROL
+            const catData = dbComparativoData['ENC.'] || dbComparativoData['ACCIONES DE CONTROL'] || {};
+            
+            // Helper to get series by matching subcategory names in BD
+            const getSeriesByKeys = (possibleKeys) => {
+              for (const pk of possibleKeys) {
+                // Find matching key case-insensitively
+                const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === pk.toUpperCase());
+                if (matchedKey && catData[matchedKey]) {
+                  return yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+                }
+              }
+              return null;
+            };
+
+            const dbBars = getSeriesByKeys(['TOTAL ENC', 'TOTAL ENC.', 'ENC.', 'TOTAL']);
+            const dbMex = getSeriesByKeys(['MEX.', 'MEX', 'ENC. - MEX', 'MEXICANOS']);
+            const dbExt = getSeriesByKeys(['EXT.', 'EXT', 'ENC. - EXT', 'EXTRANJEROS']);
+
+            if (dbBars) barVals = dbBars;
+            if (dbMex) mexVals = dbMex;
+            if (dbExt) extVals = dbExt;
+          }
+
+          currentChart = new Chart(ctx, {
+            type: 'bar',
+            plugins: plugins,
+            data: {
+              labels: yearsLabels,
+              datasets: [
+                {
+                  type: 'line',
+                  label: 'EXT.',
+                  data: extVals,
+                  borderColor: '#8b263e',
+                  backgroundColor: '#8b263e',
+                  borderWidth: 2.5,
+                  pointRadius: 4.5,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 1,
+                  datalabels: {
+                    align: 'top',
+                    anchor: 'center',
+                    color: '#8b263e',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'line',
+                  label: 'MEX.',
+                  data: mexVals,
+                  borderColor: '#1a1a1a',
+                  backgroundColor: '#1a1a1a',
+                  borderWidth: 2.5,
+                  pointRadius: 4.5,
+                  pointHoverRadius: 6,
+                  fill: false,
+                  tension: 0.35,
+                  order: 2,
+                  datalabels: {
+                    align: 'bottom',
+                    anchor: 'center',
+                    color: '#1a1a1a',
+                    font: { weight: 'bold', size: 9 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                },
+                {
+                  type: 'bar',
+                  label: 'ENC.',
+                  data: barVals,
+                  backgroundColor: 'rgba(212, 208, 196, 0.75)',
+                  borderColor: '#a39e8c',
+                  borderWidth: 1,
+                  barPercentage: 0.55,
+                  categoryPercentage: 0.9,
+                  order: 3,
+                  datalabels: {
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#2c2c2a',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (val) => val ? val.toLocaleString() : ''
+                  }
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  top: 25,
+                  bottom: 5,
+                  left: 10,
+                  right: 10
+                }
+              },
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    boxWidth: 12,
+                    boxHeight: 12,
+                    font: { size: 10, weight: 'bold', family: 'DM Sans' },
+                    usePointStyle: false
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: true,
+                    color: '#d4d0c4',
+                    lineDash: [3, 3]
+                  },
+                  ticks: { display: false }
+                },
+                y: {
+                  display: false,
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
