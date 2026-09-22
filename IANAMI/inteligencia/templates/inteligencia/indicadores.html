@@ -583,6 +583,212 @@
       }
       .trend-pill-right.up { color: var(--verde); }
       .trend-pill-right.down { color: var(--rojo); }
+
+      /* Proteccion Styles */
+      .proteccion-title-banner {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 30px;
+        letter-spacing: 3px;
+        color: #7b6843;
+        text-align: center;
+        margin-bottom: 2px;
+      }
+      .proteccion-subtitle-banner {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #7b6843;
+        text-align: center;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+      }
+      .proteccion-container {
+        display: grid;
+        grid-template-columns: 1fr 1.35fr;
+        gap: 24px;
+        align-items: stretch;
+      }
+      @media (max-width: 1200px) {
+        .proteccion-container {
+          grid-template-columns: 1fr;
+        }
+      }
+      .proteccion-table-card {
+        background: #fff;
+        border: 1px solid var(--borde);
+        border-radius: 6px;
+        padding: 16px;
+        box-shadow: 0 1px 4px var(--sombra);
+        overflow-x: auto;
+      }
+      .custom-prim-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 11px;
+        text-align: center;
+      }
+      .custom-prim-table th, .custom-prim-table td {
+        border: 1px solid #738a70;
+        padding: 6px 8px;
+      }
+      .custom-prim-table thead th {
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .th-aeropuertos {
+        background: #fafaf8;
+        color: #2c2c2a;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+      }
+      .th-vuelos-main {
+        background: #a9b9a6;
+        color: #fff;
+        font-size: 12px;
+        letter-spacing: 1px;
+      }
+      .th-rep-main {
+        background: #a9b9a6;
+        color: #fff;
+        font-size: 12px;
+        letter-spacing: 1px;
+      }
+      .th-total-year-main {
+        background: #801c2d;
+        color: #fff;
+        font-size: 12px;
+        letter-spacing: 1px;
+      }
+      .th-sub-date {
+        background: #fafaf8;
+        color: #2c2c2a;
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+      .th-sub-dif {
+        background: #fafaf8;
+        color: #2c2c2a;
+        font-size: 9px;
+        font-weight: 700;
+      }
+      .th-sub-year {
+        background: #fafaf8;
+        color: #2c2c2a;
+        font-size: 9px;
+        font-weight: 700;
+      }
+      .custom-prim-table tbody tr td:first-child {
+        font-weight: 700;
+        color: #2c2c2a;
+        text-align: center;
+        letter-spacing: 0.3px;
+      }
+      .custom-prim-table tbody tr.row-total {
+        font-weight: 800;
+      }
+      .row-total td {
+        background: #fafaf8;
+      }
+      .row-total td.total-rep-cell {
+        background: #a9b9a6;
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+      }
+      .row-total td.total-year-cell {
+        background: #801c2d;
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+      }
+
+      /* Comerciales Table Olive Theme */
+      .th-com-rep-main {
+        background: #9fa083;
+        color: #fff;
+        font-size: 12px;
+        letter-spacing: 1px;
+      }
+      .th-com-total-main {
+        background: #6f7f45;
+        color: #fff;
+        font-size: 12px;
+        letter-spacing: 1px;
+      }
+      .row-total td.total-com-rep-cell {
+        background: #9fa083;
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+      }
+      .row-total td.total-com-year-cell {
+        background: #6f7f45;
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+      }
+
+      /* NNA Table Styles */
+      .th-nna-acomp {
+        background: #9fa083;
+        color: #fff;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+      }
+      .th-nna-solos {
+        background: #801c2d;
+        color: #fff;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+      }
+      .th-nna-total {
+        background: #fafaf8;
+        color: #2c2c2a;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .th-nna-dif {
+        background: #fafaf8;
+        color: #2c2c2a;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .row-total-nna td {
+        background: #801c2d;
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+      }
+      .row-pct-nna td {
+        background: #fafaf8;
+        color: #2c2c2a;
+        font-weight: 800;
+        font-size: 11px;
+      }
+      .nna-legend {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 24px;
+        margin-top: 15px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .nna-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nna-legend-box {
+        width: 14px;
+        height: 14px;
+        border-radius: 2px;
+      }
     </style>
   </head>
   <body>
@@ -963,70 +1169,135 @@
         <section class="section" id="sub-proteccion">
           <div class="section-header">
             <h2>Protección y Derechos Humanos</h2>
-            <span class="section-badge">Rescates · Canalización NNA · Atención Humanitaria</span>
+            <span class="section-badge">Repatriación Aérea · Vuelos PRIM · Monitoreo Semanal</span>
           </div>
 
-          <div class="grid">
-            <div class="card">
-              <div class="card-title">Personas Rescatadas</div>
-              <div class="kpi-container">
-                <div class="kpi-block">
-                  <div class="kpi-label">Total Rescatados</div>
-                  <div class="kpi-value verde">15,340</div>
-                </div>
-                <div class="kpi-block">
-                  <div class="kpi-label">Primera Vez</div>
-                  <div class="kpi-value arena">12,110</div>
-                </div>
-              </div>
-              <div class="bar-list">
-                <div class="bar-row">
-                  <span class="bar-label">Canalizados DIF</span>
-                  <div class="bar-track"><div class="bar-fill verde" style="width: 68%;"></div></div>
-                  <span class="bar-value">68%</span>
-                </div>
-                <div class="bar-row">
-                  <span class="bar-label">Presentados EM</span>
-                  <div class="bar-track"><div class="bar-fill rojo" style="width: 32%;"></div></div>
-                  <span class="bar-value">32%</span>
+          <div class="proteccion-title-banner">REPATRIACIÓN AÉREA</div>
+          <div class="proteccion-subtitle-banner">VUELOS PRIM</div>
+
+          <div class="proteccion-container">
+            <!-- Left Column: 6 Weeks Bar Chart -->
+            <div class="panel-card" style="display: flex; flex-direction: column;">
+              <div class="panel-header" style="background: #1e463a;">COMPORTAMIENTO SEMANAL (6 SEMANAS)</div>
+              <div class="panel-body" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                <div class="chart-container-wrapper" style="position: relative; min-height: 420px; width: 100%;">
+                  <canvas id="chart-proteccion-semanas"></canvas>
                 </div>
               </div>
             </div>
 
-            <div class="card">
-              <div class="card-title">Canalización de NNA (Menores)</div>
-              <div class="bar-list" style="margin-top: 10px;">
-                <div class="bar-row">
-                  <span class="bar-label">No Acompañados</span>
-                  <div class="bar-track"><div class="bar-fill rojo" style="width: 78%;"></div></div>
-                  <span class="bar-value">2,840</span>
-                </div>
-                <div class="bar-row">
-                  <span class="bar-label">Acompañados</span>
-                  <div class="bar-track"><div class="bar-fill verde" style="width: 42%;"></div></div>
-                  <span class="bar-value">1,510</span>
+            <!-- Right Column: 2 Weeks Contrast & Annual Totals Table -->
+            <div class="proteccion-table-card">
+              <table class="custom-prim-table" id="table-proteccion-prim">
+                <thead>
+                  <tr>
+                    <th rowspan="2" class="th-aeropuertos">AEROPUERTOS</th>
+                    <th colspan="3" class="th-vuelos-main">VUELOS</th>
+                    <th colspan="3" class="th-rep-main">REPATRIADOS</th>
+                    <th colspan="2" class="th-total-year-main" id="th-year-title">TOTAL 2026</th>
+                  </tr>
+                  <tr>
+                    <th class="th-sub-date" id="th-vuelos-prev">SEM PREVIA</th>
+                    <th class="th-sub-date" id="th-vuelos-last">SEM ACTUAL</th>
+                    <th class="th-sub-dif">DIFERENCIA</th>
+                    <th class="th-sub-date" id="th-rep-prev">SEM PREVIA</th>
+                    <th class="th-sub-date" id="th-rep-last">SEM ACTUAL</th>
+                    <th class="th-sub-dif">DIFERENCIA</th>
+                    <th class="th-sub-year">VUELOS</th>
+                    <th class="th-sub-year">REPATRIADOS</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-proteccion-prim">
+                  <tr>
+                    <td colspan="9" style="text-align: center; color: #888; padding: 20px;">Cargando datos...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- BLOQUE 2: REPATRIACIONES VUELOS COMERCIALES -->
+          <div class="proteccion-title-banner" style="margin-top: 45px;">REPATRIACIONES VUELOS COMERCIALES</div>
+          <div class="proteccion-subtitle-banner">MONITOREO SEMANAL Y ANUAL</div>
+
+          <div class="proteccion-container">
+            <!-- Left Column: 6 Weeks Bar Chart (Comerciales) -->
+            <div class="panel-card" style="display: flex; flex-direction: column;">
+              <div class="panel-header" style="background: #6f7f45;">COMPORTAMIENTO SEMANAL (6 SEMANAS)</div>
+              <div class="panel-body" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                <div class="chart-container-wrapper" style="position: relative; min-height: 420px; width: 100%;">
+                  <canvas id="chart-comerciales-semanas"></canvas>
                 </div>
               </div>
-              <p style="font-size: 11px; color: var(--gris); line-height: 1.5; margin-top: 12px;">
-                Los Niños, Niñas y Adolescentes (NNA) son canalizados de manera prioritaria a la Procuraduría de Protección y al Sistema DIF.
-              </p>
             </div>
 
-            <div class="card">
-              <div class="card-title">Acompañamiento en Caravanas</div>
-              <div class="kpi-container">
-                <div class="kpi-block">
-                  <div class="kpi-label">Monitoreadas</div>
-                  <div class="kpi-value arena">4 Activas</div>
+            <!-- Right Column: 2 Weeks Contrast & Annual Totals Table (Comerciales) -->
+            <div class="proteccion-table-card">
+              <table class="custom-prim-table" id="table-proteccion-comerciales">
+                <thead>
+                  <tr>
+                    <th rowspan="2" class="th-aeropuertos">AEROPUERTOS</th>
+                    <th colspan="3" class="th-com-rep-main">REPATRIADOS</th>
+                    <th rowspan="2" class="th-com-total-main" id="th-com-year-title">TOTAL 2026<br><span style="font-size: 9px; font-weight: 700;">REPATRIADOS</span></th>
+                  </tr>
+                  <tr>
+                    <th class="th-sub-date" id="th-com-rep-prev">SEM PREVIA</th>
+                    <th class="th-sub-date" id="th-com-rep-last">SEM ACTUAL</th>
+                    <th class="th-sub-dif">DIFERENCIA</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-proteccion-comerciales">
+                  <tr>
+                    <td colspan="5" style="text-align: center; color: #888; padding: 20px;">Cargando datos...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- BLOQUE 3: NNA'S POR CONDICIÓN DE ACOMPAÑAMIENTO -->
+          <div class="proteccion-title-banner" style="margin-top: 45px;">NNA'S POR CONDICIÓN DE ACOMPAÑAMIENTO</div>
+          <div class="proteccion-subtitle-banner">REPATRIADOS MENORES POR CONDICIÓN DE ACOMPAÑAMIENTO</div>
+
+          <div class="proteccion-container">
+            <!-- Left Column: NNA Mixed Chart (Bars + Lines) -->
+            <div class="panel-card" style="display: flex; flex-direction: column;">
+              <div class="panel-header" style="background: #801c2d;">COMPORTAMIENTO MENSUAL</div>
+              <div class="panel-body" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                <div class="chart-container-wrapper" style="position: relative; min-height: 420px; width: 100%;">
+                  <canvas id="chart-nna-meses"></canvas>
                 </div>
-                <div class="kpi-block">
-                  <div class="kpi-label">Asistencia Med.</div>
-                  <div class="kpi-value verde">98%</div>
+                <div class="nna-legend">
+                  <div class="nna-legend-item">
+                    <span class="nna-legend-box" style="background: #9fa083;"></span>
+                    <span>ACOMPAÑADOS</span>
+                  </div>
+                  <div class="nna-legend-item">
+                    <span class="nna-legend-box" style="background: #801c2d;"></span>
+                    <span>NO ACOMPAÑADOS</span>
+                  </div>
                 </div>
               </div>
-              <p style="font-size: 11px; color: var(--gris); line-height: 1.5; margin-top: 10px;">
-                Seguimiento humanitario y asistencia médica a grupos en tránsito con un enfoque prioritario en los derechos humanos.
-              </p>
+            </div>
+
+            <!-- Right Column: NNA Monthly Table -->
+            <div class="proteccion-table-card">
+              <table class="custom-prim-table" id="table-proteccion-nna">
+                <thead>
+                  <tr>
+                    <th class="th-aeropuertos">MES</th>
+                    <th class="th-nna-acomp">ACOMPAÑADOS</th>
+                    <th class="th-nna-solos">NO ACOMPAÑADOS</th>
+                    <th class="th-nna-total">TOTAL</th>
+                    <th class="th-nna-dif">DIFERENCIA</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-proteccion-nna">
+                  <tr>
+                    <td colspan="5" style="text-align: center; color: #888; padding: 20px;">Cargando datos...</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
@@ -1042,6 +1313,9 @@
       let pieCurrChart = null;
       let controlChart1 = null;
       let controlChart2 = null;
+      let proteccionSemanasChart = null;
+      let comercialesSemanasChart = null;
+      let nnaMesesChart = null;
 
       if (typeof ChartDataLabels !== 'undefined') {
         Chart.register(ChartDataLabels);
@@ -1206,6 +1480,8 @@
           loadRegulacionData();
         } else if (sub === 'control') {
           loadControlData();
+        } else if (sub === 'proteccion') {
+          loadProteccionData();
         }
       }
 
@@ -2760,6 +3036,634 @@
         if (metricData.state2) html += getTrendPill(metricData.state2.pct_change);
 
         container.innerHTML = html;
+      }
+
+      async function loadProteccionData() {
+        try {
+          const response = await fetch("{% url 'proteccion_data' %}");
+          if (!response.ok) throw new Error("Error al obtener datos de protección");
+          const data = await response.json();
+
+          if (!data.has_data || !data.weeks_bar || data.weeks_bar.length === 0) {
+            document.getElementById('tbody-proteccion-prim').innerHTML = `
+              <tr>
+                <td colspan="9" style="text-align: center; color: #888; padding: 25px;">
+                  No hay datos registrados en MexRepatriados.
+                </td>
+              </tr>
+            `;
+            return;
+          }
+
+          // 1. Render Bar Chart
+          renderProteccionChart(data.weeks_bar);
+
+          // 2. Update Table Headers
+          if (data.two_weeks_headers) {
+            document.getElementById('th-vuelos-prev').textContent = data.two_weeks_headers.prev;
+            document.getElementById('th-vuelos-last').textContent = data.two_weeks_headers.last;
+            document.getElementById('th-rep-prev').textContent = data.two_weeks_headers.prev;
+            document.getElementById('th-rep-last').textContent = data.two_weeks_headers.last;
+          }
+          if (data.current_year) {
+            document.getElementById('th-year-title').textContent = `TOTAL ${data.current_year}`;
+          }
+
+          // 3. Render Table Rows
+          const tbody = document.getElementById('tbody-proteccion-prim');
+          let rowsHtml = '';
+
+          data.table_data.forEach(item => {
+            const difVuelosStr = item.vuelos_dif > 0 ? `+${item.vuelos_dif}` : (item.vuelos_dif < 0 ? `-${Math.abs(item.vuelos_dif)}` : '0');
+            const difRepStr = item.rep_dif > 0 ? `+${item.rep_dif.toLocaleString()}` : (item.rep_dif < 0 ? `-${Math.abs(item.rep_dif).toLocaleString()}` : '0');
+
+            rowsHtml += `
+              <tr>
+                <td>${item.punto}</td>
+                <td>${item.vuelos_prev.toLocaleString()}</td>
+                <td>${item.vuelos_last.toLocaleString()}</td>
+                <td>${difVuelosStr}</td>
+                <td>${item.rep_prev.toLocaleString()}</td>
+                <td>${item.rep_last.toLocaleString()}</td>
+                <td>${difRepStr}</td>
+                <td><strong>${item.year_vuelos.toLocaleString()}</strong></td>
+                <td><strong>${item.year_rep.toLocaleString()}</strong></td>
+              </tr>
+            `;
+          });
+
+          // Total row
+          if (data.table_total) {
+            const tot = data.table_total;
+            const difTotVuelos = tot.vuelos_dif > 0 ? `+${tot.vuelos_dif}` : (tot.vuelos_dif < 0 ? `-${Math.abs(tot.vuelos_dif)}` : '0');
+            const difTotRep = tot.rep_dif > 0 ? `+${tot.rep_dif.toLocaleString()}` : (tot.rep_dif < 0 ? `-${Math.abs(tot.rep_dif).toLocaleString()}` : '0');
+
+            rowsHtml += `
+              <tr class="row-total">
+                <td>TOTAL</td>
+                <td>${tot.vuelos_prev.toLocaleString()}</td>
+                <td>${tot.vuelos_last.toLocaleString()}</td>
+                <td>${difTotVuelos}</td>
+                <td class="total-rep-cell">${tot.rep_prev.toLocaleString()}</td>
+                <td class="total-rep-cell">${tot.rep_last.toLocaleString()}</td>
+                <td class="total-rep-cell">${difTotRep}</td>
+                <td class="total-year-cell">${tot.year_vuelos.toLocaleString()}</td>
+                <td class="total-year-cell">${tot.year_rep.toLocaleString()}</td>
+              </tr>
+            `;
+          }
+
+          tbody.innerHTML = rowsHtml;
+
+          // =========================================================================
+          // 4. Render Comerciales (Repatriaciones Vuelos Comerciales)
+          // =========================================================================
+          const com = data.comerciales;
+          if (com && com.has_data && com.weeks_bar && com.weeks_bar.length > 0) {
+            // Render Comerciales Bar Chart
+            renderComercialesChart(com.weeks_bar);
+
+            // Update Comerciales Table Headers
+            if (com.two_weeks_headers) {
+              document.getElementById('th-com-rep-prev').textContent = com.two_weeks_headers.prev;
+              document.getElementById('th-com-rep-last').textContent = com.two_weeks_headers.last;
+            }
+            if (com.current_year) {
+              document.getElementById('th-com-year-title').innerHTML = `TOTAL ${com.current_year}<br><span style="font-size: 9px; font-weight: 700;">REPATRIADOS</span>`;
+            }
+
+            // Render Comerciales Table Rows
+            const tbodyCom = document.getElementById('tbody-proteccion-comerciales');
+            let rowsComHtml = '';
+
+            com.table_data.forEach(item => {
+              const difRepStr = item.rep_dif > 0 ? `+${item.rep_dif.toLocaleString()}` : (item.rep_dif < 0 ? `-${Math.abs(item.rep_dif).toLocaleString()}` : '0');
+
+              rowsComHtml += `
+                <tr>
+                  <td>${item.punto}</td>
+                  <td>${item.rep_prev.toLocaleString()}</td>
+                  <td>${item.rep_last.toLocaleString()}</td>
+                  <td>${difRepStr}</td>
+                  <td><strong>${item.year_rep.toLocaleString()}</strong></td>
+                </tr>
+              `;
+            });
+
+            // Total row Comerciales
+            if (com.table_total) {
+              const totCom = com.table_total;
+              const difTotRepCom = totCom.rep_dif > 0 ? `+${totCom.rep_dif.toLocaleString()}` : (totCom.rep_dif < 0 ? `-${Math.abs(totCom.rep_dif).toLocaleString()}` : '0');
+
+              rowsComHtml += `
+                <tr class="row-total">
+                  <td>TOTAL</td>
+                  <td class="total-com-rep-cell">${totCom.rep_prev.toLocaleString()}</td>
+                  <td class="total-com-rep-cell">${totCom.rep_last.toLocaleString()}</td>
+                  <td class="total-com-rep-cell">${difTotRepCom}</td>
+                  <td class="total-com-year-cell">${totCom.year_rep.toLocaleString()}</td>
+                </tr>
+              `;
+            }
+
+            tbodyCom.innerHTML = rowsComHtml;
+          } else {
+            document.getElementById('tbody-proteccion-comerciales').innerHTML = `
+              <tr>
+                <td colspan="5" style="text-align: center; color: #888; padding: 25px;">
+                  No hay datos registrados en RepatriadosComerciales.
+                </td>
+              </tr>
+            `;
+          }
+
+          // =========================================================================
+          // 5. Render NNA's por Condición de Acompañamiento
+          // =========================================================================
+          const nna = data.nna;
+          if (nna && nna.has_data && nna.chart_labels && nna.chart_labels.length > 0) {
+            // Render NNA Mixed Chart
+            renderNnaChart(nna);
+
+            // Render NNA Table Rows
+            const tbodyNna = document.getElementById('tbody-proteccion-nna');
+            let rowsNnaHtml = '';
+
+            nna.table_data.forEach(item => {
+              let difHtml = '';
+              if (item.diferencia) {
+                if (item.dif_val > 0) {
+                  difHtml = `<span style="color: #801c2d; font-weight: 700;">${item.diferencia}</span>`;
+                } else if (item.dif_val < 0) {
+                  difHtml = `<span style="color: #6f7f45; font-weight: 700;">${item.diferencia}</span>`;
+                } else {
+                  difHtml = `<span style="color: #555; font-weight: 700;">${item.diferencia}</span>`;
+                }
+              }
+
+              rowsNnaHtml += `
+                <tr>
+                  <td><strong>${item.mes}</strong></td>
+                  <td>${item.acompanados.toLocaleString()}</td>
+                  <td>${item.solos.toLocaleString()}</td>
+                  <td><strong>${item.total.toLocaleString()}</strong></td>
+                  <td>${difHtml}</td>
+                </tr>
+              `;
+            });
+
+            // Summary Totals & Percentages Rows
+            if (nna.summary) {
+              const sm = nna.summary;
+              rowsNnaHtml += `
+                <tr class="row-total-nna">
+                  <td>TOTAL</td>
+                  <td>${sm.tot_acomp.toLocaleString()}</td>
+                  <td>${sm.tot_solos.toLocaleString()}</td>
+                  <td>${sm.tot_total.toLocaleString()}</td>
+                  <td></td>
+                </tr>
+                <tr class="row-pct-nna">
+                  <td>PORCENTAJE</td>
+                  <td>${sm.pct_acomp}%</td>
+                  <td>${sm.pct_solos}%</td>
+                  <td>100%</td>
+                  <td></td>
+                </tr>
+              `;
+            }
+
+            tbodyNna.innerHTML = rowsNnaHtml;
+          } else {
+            document.getElementById('tbody-proteccion-nna').innerHTML = `
+              <tr>
+                <td colspan="5" style="text-align: center; color: #888; padding: 25px;">
+                  No hay datos registrados de NNA.
+                </td>
+              </tr>
+            `;
+          }
+
+        } catch (err) {
+          console.error("Error cargando protección:", err);
+          document.getElementById('tbody-proteccion-prim').innerHTML = `
+            <tr>
+              <td colspan="9" style="text-align: center; color: #b66666; padding: 25px;">
+                Error al cargar los datos: ${err.message}
+              </td>
+            </tr>
+          `;
+        }
+      }
+
+      function renderProteccionChart(weeksBar) {
+        const ctx = document.getElementById('chart-proteccion-semanas');
+        if (!ctx) return;
+
+        if (proteccionSemanasChart) {
+          proteccionSemanasChart.destroy();
+        }
+
+        // Split multi-word labels into array for multi-line x-axis display
+        const labels = weeksBar.map(w => {
+          const parts = w.label.split(' ');
+          if (parts.length === 5) {
+            // e.g. "20 AL 26 DE JULIO" -> ["20 AL 26 DE", "JULIO"]
+            return [`${parts[0]} ${parts[1]} ${parts[2]} ${parts[3]}`, parts[4]];
+          } else if (parts.length === 6) {
+            // e.g. "27 DE JULIO AL 02 DE AGOSTO" -> ["27 DE JULIO AL", "02 DE AGOSTO"]
+            return [`${parts[0]} ${parts[1]} ${parts[2]} ${parts[3]}`, `${parts[4]} ${parts[5]}`];
+          }
+          return w.label;
+        });
+
+        const totals = weeksBar.map(w => w.total_repatriados);
+        const maxVal = Math.max(...totals, 100);
+        const yMax = Math.ceil((maxVal * 1.18) / 500) * 500;
+
+        proteccionSemanasChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Mexicanos Repatriados',
+                data: totals,
+                backgroundColor: '#1e463a', // Verde oscuro elegante
+                borderRadius: 2,
+                barPercentage: 0.55,
+                categoryPercentage: 0.75
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 40,
+                bottom: 10,
+                left: 10,
+                right: 10
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'rgba(44, 44, 42, 0.95)',
+                titleFont: { family: 'DM Sans', size: 12, weight: '700' },
+                bodyFont: { family: 'DM Sans', size: 11 },
+                callbacks: {
+                  label: function(context) {
+                    const item = weeksBar[context.dataIndex];
+                    return [
+                      ` Repatriados: ${context.parsed.y.toLocaleString()}`,
+                      ` Vuelos: ${item.vuelos}`
+                    ];
+                  }
+                }
+              },
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 4,
+                color: '#2c2c2a',
+                font: {
+                  family: 'DM Sans',
+                  size: 11,
+                  weight: '700'
+                },
+                formatter: function(value, context) {
+                  return Number(value).toLocaleString();
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: '#4a4a48',
+                  font: {
+                    family: 'DM Sans',
+                    size: 10,
+                    weight: '700'
+                  },
+                  maxRotation: 0,
+                  autoSkip: false
+                }
+              },
+              y: {
+                beginAtZero: true,
+                max: yMax,
+                grid: {
+                  color: '#e5e2d3',
+                  drawBorder: false
+                },
+                ticks: {
+                  color: '#808080',
+                  font: {
+                    family: 'JetBrains Mono',
+                    size: 10
+                  },
+                  callback: function(val) {
+                    return val.toLocaleString();
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      function renderComercialesChart(weeksBar) {
+        const ctx = document.getElementById('chart-comerciales-semanas');
+        if (!ctx) return;
+
+        if (comercialesSemanasChart) {
+          comercialesSemanasChart.destroy();
+        }
+
+        const labels = weeksBar.map(w => {
+          const parts = w.label.split(' ');
+          if (parts.length === 5) {
+            return [`${parts[0]} ${parts[1]} ${parts[2]} ${parts[3]}`, parts[4]];
+          } else if (parts.length === 6) {
+            return [`${parts[0]} ${parts[1]} ${parts[2]} ${parts[3]}`, `${parts[4]} ${parts[5]}`];
+          }
+          return w.label;
+        });
+
+        const totals = weeksBar.map(w => w.total_repatriados);
+        const maxVal = Math.max(...totals, 20);
+        const yMax = Math.ceil((maxVal * 1.25) / 10) * 10;
+
+        comercialesSemanasChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Repatriados Vuelos Comerciales',
+                data: totals,
+                backgroundColor: '#6f7f45', // Verde olivo elegante
+                borderRadius: 2,
+                barPercentage: 0.55,
+                categoryPercentage: 0.75
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 40,
+                bottom: 10,
+                left: 10,
+                right: 10
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'rgba(44, 44, 42, 0.95)',
+                titleFont: { family: 'DM Sans', size: 12, weight: '700' },
+                bodyFont: { family: 'DM Sans', size: 11 },
+                callbacks: {
+                  label: function(context) {
+                    const item = weeksBar[context.dataIndex];
+                    return [
+                      ` Repatriados: ${context.parsed.y.toLocaleString()}`,
+                      ` Registros: ${item.vuelos}`
+                    ];
+                  }
+                }
+              },
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'top',
+                offset: 4,
+                color: '#2c2c2a',
+                font: {
+                  family: 'DM Sans',
+                  size: 11,
+                  weight: '700'
+                },
+                formatter: function(value, context) {
+                  return Number(value).toLocaleString();
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: '#4a4a48',
+                  font: {
+                    family: 'DM Sans',
+                    size: 10,
+                    weight: '700'
+                  },
+                  maxRotation: 0,
+                  autoSkip: false
+                }
+              },
+              y: {
+                beginAtZero: true,
+                max: yMax,
+                grid: {
+                  color: '#e5e2d3',
+                  drawBorder: false
+                },
+                ticks: {
+                  color: '#808080',
+                  font: {
+                    family: 'JetBrains Mono',
+                    size: 10
+                  },
+                  callback: function(val) {
+                    return val.toLocaleString();
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      function renderNnaChart(nnaData) {
+        const ctx = document.getElementById('chart-nna-meses');
+        if (!ctx) return;
+
+        if (nnaMesesChart) {
+          nnaMesesChart.destroy();
+        }
+
+        const labels = nnaData.chart_labels;
+        const dataAcomp = nnaData.chart_acomp;
+        const dataSolos = nnaData.chart_solos;
+
+        const allValues = [...dataAcomp, ...dataSolos];
+        const maxVal = Math.max(...allValues, 100);
+        const yMax = Math.ceil((maxVal * 1.2) / 100) * 100;
+
+        nnaMesesChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              // Dataset 0: Barras Acompañados
+              {
+                type: 'bar',
+                label: 'Acompañados (Barras)',
+                data: dataAcomp,
+                backgroundColor: '#9fa083', // Dorado / Mostaza / Olivo claro
+                borderRadius: 2,
+                barPercentage: 0.7,
+                categoryPercentage: 0.65,
+                order: 2,
+                datalabels: {
+                  display: true,
+                  anchor: 'end',
+                  align: 'top',
+                  offset: 4,
+                  color: '#2c2c2a',
+                  font: { family: 'DM Sans', size: 10, weight: '700' },
+                  formatter: (v) => Number(v).toLocaleString()
+                }
+              },
+              // Dataset 1: Barras No Acompañados
+              {
+                type: 'bar',
+                label: 'No Acompañados (Barras)',
+                data: dataSolos,
+                backgroundColor: '#801c2d', // Guinda / Rojo oscuro
+                borderRadius: 2,
+                barPercentage: 0.7,
+                categoryPercentage: 0.65,
+                order: 2,
+                datalabels: {
+                  display: true,
+                  anchor: 'end',
+                  align: 'top',
+                  offset: 4,
+                  color: '#2c2c2a',
+                  font: { family: 'DM Sans', size: 10, weight: '700' },
+                  formatter: (v) => Number(v).toLocaleString()
+                }
+              },
+              // Dataset 2: Línea Acompañados
+              {
+                type: 'line',
+                label: 'Acompañados (Línea)',
+                data: dataAcomp,
+                borderColor: '#9fa083',
+                backgroundColor: '#9fa083',
+                borderWidth: 2,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                tension: 0.2,
+                order: 1,
+                datalabels: {
+                  display: false
+                }
+              },
+              // Dataset 3: Línea No Acompañados
+              {
+                type: 'line',
+                label: 'No Acompañados (Línea)',
+                data: dataSolos,
+                borderColor: '#801c2d',
+                backgroundColor: '#801c2d',
+                borderWidth: 2,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                tension: 0.2,
+                order: 1,
+                datalabels: {
+                  display: false
+                }
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 35,
+                bottom: 10,
+                left: 10,
+                right: 10
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'rgba(44, 44, 42, 0.95)',
+                titleFont: { family: 'DM Sans', size: 12, weight: '700' },
+                bodyFont: { family: 'DM Sans', size: 11 },
+                filter: function(tooltipItem) {
+                  // Mostrar sólo tooltips de las barras (evitar duplicados con las líneas)
+                  return tooltipItem.datasetIndex === 0 || tooltipItem.datasetIndex === 1;
+                },
+                callbacks: {
+                  label: function(context) {
+                    const label = context.datasetIndex === 0 ? 'Acompañados' : 'No Acompañados';
+                    return ` ${label}: ${Number(context.parsed.y).toLocaleString()}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: '#4a4a48',
+                  font: {
+                    family: 'DM Sans',
+                    size: 10,
+                    weight: '700'
+                  },
+                  maxRotation: 0,
+                  autoSkip: false
+                }
+              },
+              y: {
+                beginAtZero: true,
+                max: yMax,
+                grid: {
+                  color: '#e5e2d3',
+                  drawBorder: false
+                },
+                ticks: {
+                  color: '#808080',
+                  font: {
+                    family: 'JetBrains Mono',
+                    size: 10
+                  },
+                  callback: function(val) {
+                    return val.toLocaleString();
+                  }
+                }
+              }
+            }
+          }
+        });
       }
 
       function updateClock() {

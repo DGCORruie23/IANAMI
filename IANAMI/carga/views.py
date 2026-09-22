@@ -12,7 +12,8 @@ from .models import (
     Estado, EstadoOR, Nacionalidad, CanalizadoAdulto, CanalizadoNNA, CondicionEstancia,
     MotivoEstancia, Encuentro, ExtranjeroRecibido, Inadmision, Internacion,
     MexicanoRecibido, Presentado, Rescatado, Retornado, Traslado, Caravana, ActasCivil,
-    TramitesMigratorios, Inadmision2da, InternacionN, TipoIngresoP, MetricaComparativa
+    TramitesMigratorios, Inadmision2da, InternacionN, TipoIngresoP, MetricaComparativa,
+    MexRepatriados, RepatriadosComerciales
 )
 
 # Cache dictionaries for fast queries
@@ -115,7 +116,7 @@ def get_or_create_tipo_ingreso(nombre):
         tipos_ingreso_cache[nombre_clean] = tipo_obj
     return tipos_ingreso_cache[nombre_clean]
 
-def parse_date(date_str):
+def parse_date(date_str, dayfirst=False):
     if not date_str:
         return None
     date_str = str(date_str).strip()
@@ -130,11 +131,11 @@ def parse_date(date_str):
         except Exception:
             pass
     try:
-        # Prioritize pandas, which resolves 9/11/24 as 2024-09-11 (month-first) by default
-        return pd.to_datetime(date_str, dayfirst=False).date()
+        return pd.to_datetime(date_str, dayfirst=dayfirst).date()
     except Exception:
         pass
-    for fmt in ('%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', '%d/%m/%Y', '%d/%m/%y', '%Y/%m/%d'):
+    fmts = ('%d/%m/%Y', '%d/%m/%y', '%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', '%Y/%m/%d') if dayfirst else ('%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', '%d/%m/%Y', '%d/%m/%y', '%Y/%m/%d')
+    for fmt in fmts:
         try:
             return datetime.strptime(date_str, fmt).date()
         except ValueError:
@@ -497,6 +498,46 @@ def process_row_to_batch(model_type, row, batch):
         )
         batch.append(obj)
         rows_added += 1
+    elif model_type == "mex_repatriados":
+        fecha = parse_date(row.get("FECHA_REPATRIACION") or row.get("FECHA") or row.get("fecha"), dayfirst=True)
+        if not fecha:
+            return 0
+        oficina = clean_text(row.get("ESTADO") or row.get("OFICINA") or row.get("estado") or "")[:100]
+        punto = clean_text(row.get("PUNTO_REPATRIACION") or row.get("PUNTO REPATRIACION") or row.get("punto_repatriacion") or "")[:150]
+        
+        obj = MexRepatriados(
+            fecha=fecha,
+            oficina=oficina,
+            puntoInternación=punto,
+            total=parse_int(row.get("MEXICANOS REPATRIADOS") or row.get("TOTAL")),
+            hombresA=parse_int(row.get("ADULTOS HOMBRES") or row.get("HOMBRES ADULTOS")),
+            mujeresA=parse_int(row.get("ADULTOS MUJERES") or row.get("MUJERES ADULTAS")),
+            ninos=parse_int(row.get("MENORES HOMBRES") or row.get("NINOS")),
+            ninas=parse_int(row.get("MENORES MUJERES") or row.get("NINAS")),
+            acompañados=parse_int(row.get("ACOMPAÑADOS") or row.get("ACOMPANADOS")),
+            solos=parse_int(row.get("NO_ACOMPAÑADOS") or row.get("NO ACOMPAÑADOS") or row.get("SOLOS"))
+        )
+        batch.append(obj)
+        rows_added += 1
+    elif model_type == "repatriados_comerciales":
+        fecha = parse_date(row.get("DIA") or row.get("Dia") or row.get("FECHA") or row.get("fecha"), dayfirst=True)
+        if not fecha:
+            return 0
+        oficina = clean_text(row.get("O.R.") or row.get("OR") or row.get("ESTADO") or row.get("OFICINA") or "")[:100]
+        punto = clean_text(row.get("Punto Internacion") or row.get("PUNTO DE INTERNACION") or row.get("PUNTO INTERNACION") or "")[:150]
+        
+        obj = RepatriadosComerciales(
+            fecha=fecha,
+            oficina=oficina,
+            puntoInternación=punto,
+            total=parse_int(row.get("MEXICANOS REPATRIADOS") or row.get("TOTAL")),
+            adultos=parse_int(row.get("ADULTOS")),
+            menores=parse_int(row.get("MENORES")),
+            nna_solos=parse_int(row.get("NNA NO ACOMPAÑADOS") or row.get("NNA NO ACOMPANADOS")),
+            nna_acompañados=parse_int(row.get("NNA ACOMPAÑADOS") or row.get("NNA ACOMPANADOS"))
+        )
+        batch.append(obj)
+        rows_added += 1
     return rows_added
 
 @login_required
@@ -580,7 +621,9 @@ def upload_view(request):
             "actas_civil": ActasCivil,
             "tramites_migratorios": TramitesMigratorios,
             "inadmisiones2da": Inadmision2da,
-            "internaciones_n": InternacionN
+            "internaciones_n": InternacionN,
+            "mex_repatriados": MexRepatriados,
+            "repatriados_comerciales": RepatriadosComerciales
         }
         
         model_class = model_classes.get(model_type)
@@ -588,6 +631,18 @@ def upload_view(request):
             return JsonResponse({"status": "error", "message": "Tipo de modelo no reconocido."}, status=400)
             
         try:
+            # If this is the first chunk of the upload session, clear existing data for this model
+            is_first_chunk = False
+            if is_json:
+                chunk_index = data.get("chunk_index", 0)
+                if chunk_index == 0:
+                    is_first_chunk = True
+            else:
+                is_first_chunk = True
+
+            if is_first_chunk:
+                model_class.objects.all().delete()
+
             for idx, row in enumerate(items_iterator):
                 # Clean headers and values by stripping whitespace, casting keys and values to strings
                 row = {str(k).strip() if k is not None else "": str(v).strip() if v is not None else "" for k, v in row.items() if k is not None}

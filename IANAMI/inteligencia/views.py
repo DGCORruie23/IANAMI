@@ -2,14 +2,14 @@ import json
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.db.models import Sum, F, Count
+from django.db.models import Sum, F, Count, Q
 from django.db.models.functions import TruncMonth
 from datetime import date, timedelta
 from carga.models import (
     Rescatado, Presentado, CanalizadoAdulto, CanalizadoNNA, Retornado,
     MexicanoRecibido, ExtranjeroRecibido, Inadmision, Internacion,
     Encuentro, CondicionEstancia, MotivoEstancia, Caravana, ActasCivil, TramitesMigratorios,
-    InternacionN
+    InternacionN, MexRepatriados, RepatriadosComerciales
 )
 
 def format_month(dt):
@@ -909,4 +909,428 @@ def control_data_view(request):
         }
     }
     return JsonResponse(data)
+
+
+@login_required
+def proteccion_data_view(request):
+    months_es = {
+        1: "ENERO", 2: "FEBRERO", 3: "MARZO", 4: "ABRIL",
+        5: "MAYO", 6: "JUNIO", 7: "JULIO", 8: "AGOSTO",
+        9: "SEPTIEMBRE", 10: "OCTUBRE", 11: "NOVIEMBRE", 12: "DICIEMBRE"
+    }
+
+    latest_record = MexRepatriados.objects.order_by('-fecha').first()
+    if not latest_record:
+        return JsonResponse({
+            "status": "success",
+            "has_data": False,
+            "weeks_bar": [],
+            "table_data": [],
+            "table_total": {},
+            "two_weeks_headers": {"prev": "SEM PREVIA", "last": "SEM ACTUAL"},
+            "current_year": date.today().year
+        })
+
+    ref_date = latest_record.fecha
+    current_year = ref_date.year
+
+    # Construir las 6 semanas consecutivas hacia atrás de 7 días cada una
+    # semana 0 (más reciente): [ref_date - 6 días, ref_date]
+    # semana 1: [ref_date - 13 días, ref_date - 7 días], etc.
+    weeks = []
+    for i in range(6):
+        end_d = ref_date - timedelta(days=i * 7)
+        start_d = end_d - timedelta(days=6)
+        weeks.append((start_d, end_d))
+    weeks.reverse() # Orden cronológico: [Sem 1 (más antigua), ..., Sem 6 (más reciente)]
+
+    # Filtro base para considerar únicamente aeropuertos (AEROPUERTO, A.I, A. I)
+    airport_filter = (
+        Q(puntoInternación__icontains='AEROPUERTO') |
+        Q(puntoInternación__icontains='A.I') |
+        Q(puntoInternación__icontains='A. I')
+    )
+
+    qs_airports_base = MexRepatriados.objects.filter(airport_filter)
+
+    weeks_bar = []
+    for start_d, end_d in weeks:
+        qs_w = qs_airports_base.filter(fecha__range=(start_d, end_d))
+        tot_repatriados = qs_w.aggregate(s=Sum('total'))['s'] or 0
+        vuelos_count = qs_w.count()
+
+        if start_d.month == end_d.month:
+            label = f"{start_d.day:02d} AL {end_d.day:02d} DE {months_es[start_d.month]}"
+        else:
+            label = f"{start_d.day:02d} DE {months_es[start_d.month]} AL {end_d.day:02d} DE {months_es[end_d.month]}"
+
+        weeks_bar.append({
+            "label": label,
+            "start_date": start_d.strftime("%Y-%m-%d"),
+            "end_date": end_d.strftime("%Y-%m-%d"),
+            "total_repatriados": tot_repatriados,
+            "vuelos": vuelos_count
+        })
+
+    # Últimas dos semanas para contrastar en la tabla
+    prev_w_start, prev_w_end = weeks[-2]
+    last_w_start, last_w_end = weeks[-1]
+
+    def fmt_week_header(s_d, e_d):
+        if s_d.month == e_d.month:
+            return f"DEL {s_d.day:02d} AL {e_d.day:02d} DE {months_es[s_d.month]}"
+        return f"DEL {s_d.day:02d} DE {months_es[s_d.month]} AL {e_d.day:02d} DE {months_es[e_d.month]}"
+
+    two_weeks_headers = {
+        "prev": fmt_week_header(prev_w_start, prev_w_end),
+        "last": fmt_week_header(last_w_start, last_w_end)
+    }
+
+    # Obtener puntos de aeropuertos únicos
+    raw_points = list(qs_airports_base.values_list('puntoInternación', flat=True).distinct())
+    raw_points = [p for p in raw_points if p]
+
+    def clean_airport_display_name(pt):
+        p = pt.upper().strip()
+        if 'TAPACHULA' in p:
+            return 'TAPACHULA'
+        if 'VILLAHERMOSA' in p:
+            return 'VILLAHERMOSA'
+        if 'FELIPE ANGELES' in p or 'AIFA' in p:
+            return 'AIFA'
+        if 'TULUM' in p:
+            return 'TULUM'
+        if 'MORELIA' in p:
+            return 'MORELIA'
+        if 'HUATULCO' in p:
+            return 'HUATULCO'
+        if 'MERIDA' in p or 'MÉRIDA' in p:
+            return 'MÉRIDA'
+        if 'CAMPECHE' in p:
+            return 'CAMPECHE'
+        if 'SAN LUIS POTOSI' in p or 'SAN LUIS POTOSÍ' in p:
+            return 'SAN LUIS POTOSÍ'
+        if 'GUADALAJARA' in p:
+            return 'GUADALAJARA'
+        if 'MONTERREY' in p:
+            return 'MONTERREY'
+        if 'CIUDAD DE MEXICO' in p or 'AICM' in p or 'CDMX' in p:
+            return 'CIUDAD DE MÉXICO'
+        
+        # Fallback genérico
+        p = p.replace('AEROPUERTO INTERNACIONAL DE', '').replace('AEROPUERTO INTERNACIONAL', '')
+        p = p.replace('A. I.', '').replace('A.I.', '').replace('A.I', '').replace('OR. CHIAPAS /', '')
+        p = p.replace('"', '').strip()
+        return p or pt.upper().strip()
+
+    # Mapear cada nombre normalizado con su lista de strings en BD (para evitar duplicados como Monterrey)
+    airport_groups = {}
+    for raw_pt in raw_points:
+        norm_name = clean_airport_display_name(raw_pt)
+        if norm_name not in airport_groups:
+            airport_groups[norm_name] = []
+        airport_groups[norm_name].append(raw_pt)
+
+    table_data = []
+    
+    tot_prev_vuelos = 0
+    tot_last_vuelos = 0
+    tot_prev_rep = 0
+    tot_last_rep = 0
+    tot_year_vuelos = 0
+    tot_year_rep = 0
+
+    # Consultar por cada grupo de aeropuertos normalizado
+    for display_name, pts_list in airport_groups.items():
+        qs_pt_all = qs_airports_base.filter(puntoInternación__in=pts_list)
+        qs_pt_year = qs_pt_all.filter(fecha__year=current_year)
+        
+        y_vuelos = qs_pt_year.count()
+        y_rep = qs_pt_year.aggregate(s=Sum('total'))['s'] or 0
+
+        qs_prev = qs_pt_all.filter(fecha__range=(prev_w_start, prev_w_end))
+        v_prev = qs_prev.count()
+        r_prev = qs_prev.aggregate(s=Sum('total'))['s'] or 0
+
+        qs_last = qs_pt_all.filter(fecha__range=(last_w_start, last_w_end))
+        v_last = qs_last.count()
+        r_last = qs_last.aggregate(s=Sum('total'))['s'] or 0
+
+        # Si no tiene actividad en las últimas semanas ni en el año en curso
+        if v_prev == 0 and v_last == 0 and y_vuelos == 0 and y_rep == 0:
+            continue
+
+        dif_vuelos = v_last - v_prev
+        dif_rep = r_last - r_prev
+
+        table_data.append({
+            "punto": display_name,
+            "vuelos_prev": v_prev,
+            "vuelos_last": v_last,
+            "vuelos_dif": dif_vuelos,
+            "rep_prev": r_prev,
+            "rep_last": r_last,
+            "rep_dif": dif_rep,
+            "year_vuelos": y_vuelos,
+            "year_rep": y_rep
+        })
+
+        tot_prev_vuelos += v_prev
+        tot_last_vuelos += v_last
+        tot_prev_rep += r_prev
+        tot_last_rep += r_last
+        tot_year_vuelos += y_vuelos
+        tot_year_rep += y_rep
+
+    # Ordenar por repatriados de la última semana descendente, luego acumulado anual
+    table_data.sort(key=lambda x: (x['rep_last'], x['year_rep']), reverse=True)
+
+    table_total = {
+        "vuelos_prev": tot_prev_vuelos,
+        "vuelos_last": tot_last_vuelos,
+        "vuelos_dif": tot_last_vuelos - tot_prev_vuelos,
+        "rep_prev": tot_prev_rep,
+        "rep_last": tot_last_rep,
+        "rep_dif": tot_last_rep - tot_prev_rep,
+        "year_vuelos": tot_year_vuelos,
+        "year_rep": tot_year_rep
+    }
+
+    # =========================================================================
+    # SECCIÓN COMERCIALES (RepatriadosComerciales)
+    # =========================================================================
+    latest_com = RepatriadosComerciales.objects.order_by('-fecha').first()
+    com_has_data = False
+    com_weeks_bar = []
+    com_table_data = []
+    com_table_total = {}
+    com_two_weeks_headers = {"prev": "SEM PREVIA", "last": "SEM ACTUAL"}
+    com_current_year = date.today().year
+
+    if latest_com:
+        com_has_data = True
+        com_ref_date = latest_com.fecha
+        com_current_year = com_ref_date.year
+
+        com_weeks = []
+        for i in range(6):
+            end_d = com_ref_date - timedelta(days=i * 7)
+            start_d = end_d - timedelta(days=6)
+            com_weeks.append((start_d, end_d))
+        com_weeks.reverse()
+
+        for start_d, end_d in com_weeks:
+            qs_w = RepatriadosComerciales.objects.filter(fecha__range=(start_d, end_d))
+            tot_rep = qs_w.aggregate(s=Sum('total'))['s'] or 0
+            vuelos_cnt = qs_w.count()
+
+            if start_d.month == end_d.month:
+                lbl = f"{start_d.day:02d} AL {end_d.day:02d} DE {months_es[start_d.month]}"
+            else:
+                lbl = f"{start_d.day:02d} DE {months_es[start_d.month]} AL {end_d.day:02d} DE {months_es[end_d.month]}"
+
+            com_weeks_bar.append({
+                "label": lbl,
+                "start_date": start_d.strftime("%Y-%m-%d"),
+                "end_date": end_d.strftime("%Y-%m-%d"),
+                "total_repatriados": tot_rep,
+                "vuelos": vuelos_cnt
+            })
+
+        c_prev_w_start, c_prev_w_end = com_weeks[-2]
+        c_last_w_start, c_last_w_end = com_weeks[-1]
+
+        com_two_weeks_headers = {
+            "prev": fmt_week_header(c_prev_w_start, c_prev_w_end),
+            "last": fmt_week_header(c_last_w_start, c_last_w_end)
+        }
+
+        com_raw_points = list(RepatriadosComerciales.objects.values_list('puntoInternación', flat=True).distinct())
+        com_raw_points = [p for p in com_raw_points if p]
+
+        def clean_com_airport_name(pt):
+            p = pt.upper().strip()
+            if 'CANCUN' in p or 'CANCÚN' in p:
+                return 'A.I. DE CANCÚN'
+            if 'GUADALAJARA' in p:
+                return 'A.I. DE GUADALAJARA'
+            if 'MONTERREY' in p:
+                return 'A.I. DE MONTERREY'
+            if 'PUERTO VALLARTA' in p or 'VALLARTA' in p:
+                return 'A.I. DE PUERTO VALLARTA'
+            if 'CIUDAD DE MEXICO' in p or 'CIUDAD MEXICO' in p or 'CDMX' in p or 'AICM' in p:
+                return 'A.I. DE LA CIUDAD DE MÉXICO'
+            if 'CABOS' in p:
+                return 'A.I. DE LOS CABOS'
+            if 'HERMOSILLO' in p:
+                return 'A.I. DE HERMOSILLO'
+            if 'QUERETARO' in p or 'QUERETAEO' in p or 'QUERÉTARO' in p:
+                return 'A.I. DE QUERÉTARO'
+            if 'ZIHUATANEJO' in p or 'IXTAPA' in p:
+                return 'A.I. DE IXTAPA ZIHUATANEJO'
+            if 'MORELIA' in p:
+                return 'A.I. DE MORELIA'
+            if 'MERIDA' in p or 'MÉRIDA' in p:
+                return 'A.I. DE MÉRIDA'
+            if 'SAN LUIS POTOSI' in p or 'SAN LUIS POTOSÍ' in p:
+                return 'A.I. DE SAN LUIS POTOSÍ'
+            if 'CAMPECHE' in p:
+                return 'A.I. DE CAMPECHE'
+            if 'HUATULCO' in p:
+                return 'A.I. DE HUATULCO'
+            if 'TAPACHULA' in p:
+                return 'A.I. DE TAPACHULA'
+            if 'VILLAHERMOSA' in p:
+                return 'A.I. DE VILLAHERMOSA'
+            return f"A.I. DE {p.replace('AEROPUERTO INTERNACIONAL DE', '').replace('AEROPUERTO INTERNACIONAL', '').replace('A.I.', '').strip()}"
+
+        com_groups = {}
+        for raw_pt in com_raw_points:
+            norm_name = clean_com_airport_name(raw_pt)
+            if norm_name not in com_groups:
+                com_groups[norm_name] = []
+            com_groups[norm_name].append(raw_pt)
+
+        c_tot_prev_rep = 0
+        c_tot_last_rep = 0
+        c_tot_year_rep = 0
+
+        for display_name, pts_list in com_groups.items():
+            qs_pt_all = RepatriadosComerciales.objects.filter(puntoInternación__in=pts_list)
+            qs_pt_year = qs_pt_all.filter(fecha__year=com_current_year)
+            y_rep = qs_pt_year.aggregate(s=Sum('total'))['s'] or 0
+
+            qs_prev = qs_pt_all.filter(fecha__range=(c_prev_w_start, c_prev_w_end))
+            r_prev = qs_prev.aggregate(s=Sum('total'))['s'] or 0
+
+            qs_last = qs_pt_all.filter(fecha__range=(c_last_w_start, c_last_w_end))
+            r_last = qs_last.aggregate(s=Sum('total'))['s'] or 0
+
+            if r_prev == 0 and r_last == 0 and y_rep == 0:
+                continue
+
+            dif_rep = r_last - r_prev
+
+            com_table_data.append({
+                "punto": display_name,
+                "rep_prev": r_prev,
+                "rep_last": r_last,
+                "rep_dif": dif_rep,
+                "year_rep": y_rep
+            })
+
+            c_tot_prev_rep += r_prev
+            c_tot_last_rep += r_last
+            c_tot_year_rep += y_rep
+
+        com_table_data.sort(key=lambda x: (x['rep_last'], x['year_rep']), reverse=True)
+
+        com_table_total = {
+            "rep_prev": c_tot_prev_rep,
+            "rep_last": c_tot_last_rep,
+            "rep_dif": c_tot_last_rep - c_tot_prev_rep,
+            "year_rep": c_tot_year_rep
+        }
+
+    # =========================================================================
+    # SECCIÓN NNA'S POR CONDICIÓN DE ACOMPAÑAMIENTO (MexRepatriados)
+    # =========================================================================
+    nna_months_qs = (
+        MexRepatriados.objects
+        .filter(fecha__year=current_year)
+        .annotate(m=TruncMonth('fecha'))
+        .values('m')
+        .annotate(
+            tot_acomp=Sum('acompañados'),
+            tot_solos=Sum('solos')
+        )
+        .order_by('m')
+    )
+
+    nna_chart_labels = []
+    nna_chart_acomp = []
+    nna_chart_solos = []
+    nna_table_data = []
+
+    tot_nna_acomp_year = 0
+    tot_nna_solos_year = 0
+    tot_nna_total_year = 0
+
+    prev_month_total = None
+
+    for item in nna_months_qs:
+        dt = item['m']
+        if not dt:
+            continue
+        m_name = months_es[dt.month]
+        ac = item['tot_acomp'] or 0
+        so = item['tot_solos'] or 0
+        tot = ac + so
+
+        nna_chart_labels.append(m_name)
+        nna_chart_acomp.append(ac)
+        nna_chart_solos.append(so)
+
+        dif_str = ""
+        dif_val = None
+        if prev_month_total is not None and prev_month_total > 0:
+            dif_pct = round(((tot - prev_month_total) / prev_month_total) * 100)
+            dif_val = dif_pct
+            dif_str = f"+{dif_pct}%" if dif_pct > 0 else f"{dif_pct}%"
+        elif prev_month_total is not None and prev_month_total == 0 and tot > 0:
+            dif_str = "+100%"
+
+        nna_table_data.append({
+            "mes": m_name,
+            "acompanados": ac,
+            "solos": so,
+            "total": tot,
+            "diferencia": dif_str,
+            "dif_val": dif_val
+        })
+
+        tot_nna_acomp_year += ac
+        tot_nna_solos_year += so
+        tot_nna_total_year += tot
+
+        prev_month_total = tot
+
+    pct_acomp_year = round((tot_nna_acomp_year / tot_nna_total_year) * 100) if tot_nna_total_year > 0 else 0
+    pct_solos_year = round((tot_nna_solos_year / tot_nna_total_year) * 100) if tot_nna_total_year > 0 else 0
+
+    nna_summary = {
+        "tot_acomp": tot_nna_acomp_year,
+        "tot_solos": tot_nna_solos_year,
+        "tot_total": tot_nna_total_year,
+        "pct_acomp": pct_acomp_year,
+        "pct_solos": pct_solos_year
+    }
+
+    return JsonResponse({
+        "status": "success",
+        "has_data": True,
+        "weeks_bar": weeks_bar,
+        "table_data": table_data,
+        "table_total": table_total,
+        "two_weeks_headers": two_weeks_headers,
+        "current_year": current_year,
+        "comerciales": {
+            "has_data": com_has_data,
+            "weeks_bar": com_weeks_bar,
+            "table_data": com_table_data,
+            "table_total": com_table_total,
+            "two_weeks_headers": com_two_weeks_headers,
+            "current_year": com_current_year
+        },
+        "nna": {
+            "has_data": len(nna_table_data) > 0,
+            "chart_labels": nna_chart_labels,
+            "chart_acomp": nna_chart_acomp,
+            "chart_solos": nna_chart_solos,
+            "table_data": nna_table_data,
+            "summary": nna_summary,
+            "current_year": current_year
+        }
+    })
+
 

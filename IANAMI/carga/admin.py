@@ -3,7 +3,8 @@ from .models import (
     Estado, EstadoOR, Nacionalidad, CanalizadoAdulto, CanalizadoNNA, CondicionEstancia,
     MotivoEstancia, Encuentro, ExtranjeroRecibido, Inadmision, Internacion,
     MexicanoRecibido, Presentado, Rescatado, Retornado, Traslado, Caravana, ActasCivil,
-    TramitesMigratorios, Inadmision2da, InternacionN, TipoIngresoP, MetricaComparativa
+    TramitesMigratorios, Inadmision2da, InternacionN, TipoIngresoP, MetricaComparativa,
+    MexRepatriados, RepatriadosComerciales
 )
 
 @admin.register(Estado)
@@ -152,4 +153,20 @@ class MetricaComparativaAdmin(admin.ModelAdmin):
     list_filter = ('categoria', 'subcategoria', 'anio')
     search_fields = ('categoria', 'subcategoria', 'valor_texto')
     ordering = ('categoria', 'subcategoria', 'anio')
+
+@admin.register(MexRepatriados)
+class MexRepatriadosAdmin(admin.ModelAdmin):
+    list_display = ('fecha', 'oficina', 'puntoInternación', 'total', 'hombresA', 'mujeresA', 'ninos', 'ninas', 'acompañados', 'solos')
+    list_filter = ('oficina',)
+    search_fields = ('oficina', 'puntoInternación')
+    date_hierarchy = 'fecha'
+
+@admin.register(RepatriadosComerciales)
+class RepatriadosComercialesAdmin(admin.ModelAdmin):
+    list_display = ('fecha', 'oficina', 'puntoInternación', 'total', 'adultos', 'menores', 'nna_solos', 'nna_acompañados')
+    list_filter = ('oficina',)
+    search_fields = ('oficina', 'puntoInternación')
+    date_hierarchy = 'fecha'
+
+
 

@@ -299,6 +299,8 @@
                     <option value="tramites_migratorios">Trámites Migratorios (Trámites Migratorios Indicadores.xlsx)</option>
                     <option value="inadmisiones2da">Inadmisiones 2da Revisión (Segunda REVISION OCT 2024 AL __.xlsx)</option>
                     <option value="internaciones_n">Internaciones N (Ingresos OCT 2024__.xlsx)</option>
+                    <option value="mex_repatriados">Mexicanos Repatriados por Punto (puntos repatriacion.xlsx)</option>
+                    <option value="repatriados_comerciales">Repatriados Vuelos Comerciales (MAPA REPATRIADOS comerciales.xlsx)</option>
                 </select>
             </div>
 
@@ -401,7 +403,7 @@
                 // defval: "" ensures missing cells are populated with empty strings
                 // raw: false ensures cells are read as formatted strings (essential for dates/numbers)
                 let sheetOptions = { defval: "", raw: false };
-                if (modelType === 'actas_civil') {
+                if (modelType === 'actas_civil' || modelType === 'mex_repatriados') {
                     sheetOptions.range = 1;
                 }
                 const rawRows = XLSX.utils.sheet_to_json(worksheet, sheetOptions);
@@ -443,7 +445,9 @@
                     actas_civil: ['FECHA DE SOLICITUD', 'OFICINA DE REPRESENTACIÓN', 'NACIONALIDAD DE LA (S) PERSONA (S) PROMOVENTE (S)'],
                     tramites_migratorios: ['Fecha', 'Entidad Federativa', 'Oficina', 'Trámite', 'País / Empleador'],
                     inadmisiones2da: ['O.R.', 'TOTAL'],
-                    internaciones_n: ['O.R.', 'Total']
+                    internaciones_n: ['O.R.', 'Total'],
+                    mex_repatriados: ['FECHA_REPATRIACION', 'ESTADO', 'PUNTO_REPATRIACION', 'MEXICANOS REPATRIADOS'],
+                    repatriados_comerciales: ['DIA', 'O.R.', 'Punto Internacion', 'MEXICANOS REPATRIADOS']
                 };
 
                 if (modelType === 'nacionalidades') {
@@ -485,6 +489,7 @@
                         },
                         body: JSON.stringify({
                             model_type: modelType,
+                            chunk_index: i,
                             rows: chunk
                         })
                     });

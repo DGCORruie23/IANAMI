@@ -9,4 +9,5 @@ urlpatterns = [
     path('indicadores/data/', views.indicadores_data_view, name='indicadores_data'),
     path('indicadores/tramites/data/', views.tramites_data_view, name='tramites_data'),
     path('indicadores/control/data/', views.control_data_view, name='control_data'),
+    path('indicadores/proteccion/data/', views.proteccion_data_view, name='proteccion_data'),
 ]

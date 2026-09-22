@@ -373,4 +373,41 @@ class MetricaComparativa(models.Model):
             models.Index(fields=['categoria', 'subcategoria', 'anio']),
         ]
         verbose_name = "Métrica Comparativa"
-        verbose_name_plural = "Métricas Comparativas"
+        verbose_name_plural = "Métricas Comparativas"
+
+
+class MexRepatriados(models.Model):
+    fecha = models.DateField(db_index=True)
+    oficina = models.CharField(max_length=100, null=True, blank=True, db_index=True)
+    puntoInternación = models.CharField(max_length=150, null=True, blank=True, db_index=True)
+    total = models.IntegerField(default=0)
+    hombresA = models.IntegerField(default=0)
+    mujeresA= models.IntegerField(default=0)
+    ninos = models.IntegerField(default=0)
+    ninas = models.IntegerField(default=0)
+    acompañados = models.IntegerField(default=0)
+    solos = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.fecha} ({self.oficina}) - {self.puntoInternación} - {self.total}"
+
+    class Meta:
+        verbose_name = "Mex Repatriado"
+        verbose_name_plural = "Mex Repatriados"
+
+class RepatriadosComerciales(models.Model):
+    fecha = models.DateField(db_index=True)
+    oficina = models.CharField(max_length=100, null=True, blank=True, db_index=True)
+    puntoInternación = models.CharField(max_length=150, null=True, blank=True, db_index=True)
+    total = models.IntegerField(default=0)
+    adultos = models.IntegerField(default=0)
+    menores= models.IntegerField(default=0)
+    nna_acompañados = models.IntegerField(default=0)
+    nna_solos = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.fecha} ({self.oficina}) - {self.puntoInternación} - {self.total}"
+
+    class Meta:
+        verbose_name = "Repatriado V. Comercial"
+        verbose_name_plural = "Repatriados V. Comercial"
