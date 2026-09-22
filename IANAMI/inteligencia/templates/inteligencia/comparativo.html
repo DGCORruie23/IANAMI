@@ -282,6 +282,114 @@
         margin-top: auto;
       }
 
+      /* COLLAPSIBLE MATRIX GRID */
+      .matrix-grid {
+        display: grid;
+        grid-template-columns: 220px repeat(10, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .matrix-grid.collapsed {
+        margin-bottom: 8px;
+      }
+
+      .matrix-grid.collapsed .event-card {
+        padding: 8px;
+        min-height: 48px;
+        justify-content: center;
+      }
+
+      .matrix-grid.collapsed .event-card .card-header-title {
+        margin-bottom: 0;
+        border-bottom: none;
+        padding-bottom: 0;
+        text-align: center;
+        font-size: 11px;
+      }
+
+      .matrix-grid.collapsed .event-card .event-list,
+      .matrix-grid.collapsed .event-card .card-stats-box,
+      .matrix-grid.collapsed .event-card .card-footer-source {
+        display: none !important;
+      }
+
+      .matrix-grid.collapsed .side-card {
+        padding: 6px 12px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 48px;
+      }
+
+      .matrix-grid.collapsed .side-card .flag-icon {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 0;
+      }
+
+      .matrix-grid.collapsed .side-card .country-title {
+        font-size: 18px;
+        margin-bottom: 0;
+      }
+
+      .matrix-grid.collapsed .side-card .country-subtitle,
+      .matrix-grid.collapsed .side-card .map-vector {
+        display: none !important;
+      }
+
+      /* TOGGLE COLLAPSE BUTTON */
+      .toggle-country-btn {
+        margin-top: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+        color: #ffffff;
+        padding: 4px 10px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        width: 100%;
+      }
+
+      .toggle-country-btn:hover {
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      .toggle-country-btn i {
+        transition: transform 0.3s ease;
+      }
+
+      .matrix-grid.collapsed .toggle-country-btn {
+        margin-top: 0;
+        width: auto;
+        padding: 3px 8px;
+      }
+
+      .matrix-grid.collapsed .toggle-country-btn i {
+        transform: rotate(180deg);
+      }
+
+      /* EXPANDED CHART AREA HEIGHT WHEN ROWS ARE COLLAPSED */
+      .chart-wrapper {
+        position: relative;
+        width: 100%;
+        height: 280px;
+        transition: height 0.3s ease;
+      }
+
+      .chart-wrapper.expanded-chart {
+        height: 480px;
+      }
+
       .section-label-card {
         background: var(--fondo-card);
         border: 1px solid var(--borde);
@@ -436,6 +544,21 @@
         border-color: #6b1d30 !important;
       }
 
+      .btn-cooperacion {
+        grid-column: span 2;
+        background: var(--verde-alpha) !important;
+        border-color: var(--verde) !important;
+        font-weight: 700;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .btn-cooperacion:hover {
+        background: rgba(119, 142, 136, 0.35) !important;
+        border-color: var(--verde-oscuro) !important;
+        box-shadow: 0 2px 6px rgba(62, 94, 84, 0.25);
+        transform: translateY(-1px);
+      }
+
       .btn-regreso {
         background: #8b263e !important;
         color: #ffffff !important;
@@ -453,6 +576,67 @@
         border-bottom: 5px solid transparent;
         border-right: 7px solid #ffffff;
         margin-right: 2px;
+      }
+
+      .color-popover-tooltip {
+        position: fixed;
+        background: #ffffff;
+        border: 1px solid var(--borde);
+        border-radius: 4px;
+        padding: 8px 10px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 160px;
+      }
+
+      .color-popover-tooltip::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 5px;
+        border-style: solid;
+        border-color: #ffffff transparent transparent transparent;
+      }
+
+      .color-palette-dots {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        justify-content: center;
+      }
+
+      .color-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 1px solid rgba(0,0,0,0.2);
+        transition: transform 0.15s ease;
+      }
+
+      .color-dot:hover {
+        transform: scale(1.25);
+      }
+
+      .color-hex-input-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .color-hex-input-row input[type="text"] {
+        width: 100%;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 9px;
+        padding: 3px 4px;
+        border: 1px solid var(--borde);
+        border-radius: 3px;
+        text-transform: uppercase;
       }
 
       .bottom-chart-card {
@@ -634,7 +818,7 @@
       </div>
 
       <!-- MATRIX GRID 1: ESTADOS UNIDOS -->
-      <div class="matrix-grid">
+      <div class="matrix-grid" id="gridUSA">
         <!-- SIDE CARD USA -->
         <div class="side-card us-card">
           <div class="flag-icon">
@@ -645,6 +829,9 @@
           <div class="map-vector">
             <img src="{% static 'inteligencia/comparativo/MAP EUA.png' %}" alt="Mapa EUA" style="height: 90%; width: 90%;">
           </div>
+          <button class="toggle-country-btn" onclick="toggleCountryGrid('gridUSA')">
+            <i class="fa-solid fa-chevron-up"></i> <span>Contraer</span>
+          </button>
         </div>
 
         <!-- 2017 USA -->
@@ -784,7 +971,7 @@
       </div>
 
       <!-- MATRIX GRID 2: MEXICO -->
-      <div class="matrix-grid">
+      <div class="matrix-grid" id="gridMEX">
         <!-- SIDE CARD MEXICO -->
         <div class="side-card mx-card">
           <div class="flag-icon">
@@ -795,6 +982,9 @@
           <div class="map-vector">
            <img src="{% static 'inteligencia/comparativo/MAP MEX.png' %}" alt="Mapa MEX" style="height: 90%; width: 90%;">
           </div>
+          <button class="toggle-country-btn" onclick="toggleCountryGrid('gridMEX')">
+            <i class="fa-solid fa-chevron-up"></i> <span>Contraer</span>
+          </button>
         </div>
 
         <!-- 2017 MEXICO -->
@@ -959,16 +1149,15 @@
             <div class="button-grid">
               <button class="stat-btn" onclick="selectCategory('ACCIONES DE CONTROL')">ACCIONES DE CONTROL</button>
               <button class="stat-btn" onclick="selectCategory('ACCIONES DE RESCATES')">ACCIONES DE RESCATES</button>
-              <button class="stat-btn" onclick="selectCategory('ALOJADOS')">ALOJADOS</button>
               <button class="stat-btn" onclick="selectCategory('RETORNO A SU PAÍS')">RETORNO A SU PAÍS</button>
               <button class="stat-btn" onclick="selectCategory('REGULARIZACIÓN')">REGULARIZACIÓN</button>
               <button class="stat-btn" onclick="selectCategory('REPATRIACIÓN')">REPATRIACIÓN</button>
               <button class="stat-btn" onclick="selectCategory('INGRESOS AL PAÍS')">INGRESOS AL PAÍS</button>
               <button class="stat-btn" onclick="selectCategory('RECAUDACIÓN')">RECAUDACIÓN</button>
               <button class="stat-btn" onclick="selectCategory('PLANTILLA')">PLANTILLA</button>
-              <button class="stat-btn" onclick="selectCategory('COOPERACIÓN')">COOPERACIÓN</button>
-              <button class="stat-btn" onclick="selectCategory('NORMATIVIDAD')">NORMATIVIDAD</button>
-              <button class="stat-btn" onclick="selectCategory('DERECHOS HUMANOS')">DERECHOS HUMANOS</button>
+              <button class="stat-btn btn-cooperacion" onclick="selectCategory('COOPERACIÓN')">
+                <i class="fa-solid fa-handshake" style="margin-right: 4px; color: var(--verde-oscuro);"></i> MULTIPLE SELECCIÓN
+              </button>
             </div>
             <button class="stat-btn" id="btnSistemasMain" onclick="selectSistemas()" style="margin-top:8px; width:100%; background:var(--arena-alpha); border-color:var(--arena);">
               <i class="fa-solid fa-server" style="margin-right:4px;"></i> SISTEMAS
@@ -995,6 +1184,99 @@
               </div>
             </div>
             <button class="stat-btn" id="btnSistemasSub" onclick="selectSistemas()" style="margin-top:8px; width:100%; background:var(--arena-alpha); border-color:var(--arena);">
+              <i class="fa-solid fa-server" style="margin-right:4px;"></i> SISTEMAS
+            </button>
+          </div>
+
+          <!-- Cooperación Specialized View -->
+          <div id="panelCooperacionView" style="display: none; height: 100%; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="stats-panel-title" style="font-size:15px; margin-bottom:8px;">
+                <i class="fa-solid fa-handshake"></i> COMPARACIÓN MULTIPLE
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr; gap: 6px;">
+                <button class="stat-btn btn-regreso" onclick="resetMainView()">
+                  <span class="btn-back-arrow"></span> BLOQUES
+                </button>
+              </div>
+
+              <!-- Grouped Select Dropdown -->
+              <div style="margin-top: 10px;">
+                <label style="font-size: 9px; font-weight: 700; color: var(--texto); display: block; margin-bottom: 3px; text-transform: uppercase;">
+                  AGREGAR RUBRO A COMPARAR:
+                </label>
+                <select id="selectCooperacionMetric" class="stat-btn" style="width: 100%; font-size: 9.5px; padding: 5px; text-align: left; background: var(--fondo-card); cursor: pointer;" onchange="addCooperacionMetric(this.value)">
+                  <option value="">-- Seleccionar Rubro --</option>
+                  
+                  <optgroup label="ACCIONES DE CONTROL">
+                    <option value="ACCIONES DE CONTROL|TOTAL ENC">Encuentros (Total)</option>
+                    <option value="ACCIONES DE CONTROL|MEX.">Encuentros (Mexicanos)</option>
+                    <option value="ACCIONES DE CONTROL|EXT.">Encuentros (Extranjeros)</option>
+                    <option value="EXTRANJEROS RECIBIDO|TOTAL EXT REC">Extranjeros Recibidos</option>
+                  </optgroup>
+
+                  <optgroup label="ACCIONES DE RESCATES">
+                    <option value="RESCATES|TOTAL RES">Rescates (Total)</option>
+                    <option value="RESCATES|REINCIDENCIA">Rescates (Reincidencia)</option>
+                    <option value="CARAVANAS|NUM CARAVANAS">Caravanas (Número)</option>
+                    <option value="CARAVANAS|PERSONAS">Caravanas (Personas)</option>
+                    <option value="TRASLADOS DE NORTE A SUR|(AEREO) PERSONAS">Traslados N-S (Personas Aéreo)</option>
+                    <option value="TRASLADOS DE NORTE A SUR|(TERRESTRE) PERSONAS">Traslados N-S (Personas Terrestre)</option>
+                    <option value="TRASLADOS DE NORTE A SUR|(VUELOS) VIAJES">Traslados N-S (Viajes Vuelos)</option>
+                    <option value="TRASLADOS DE NORTE A SUR|(TERRESTRE) VIAJES">Traslados N-S (Viajes Terrestre)</option>
+                  </optgroup>
+
+                  <optgroup label="RETORNO A SU PAÍS">
+                    <option value="TRASLADOS A SU PAIS|PERSONAS">Traslados a su País (Personas)</option>
+                    <option value="TRASLADOS A SU PAIS|VIAJES">Traslados a su País (Viajes)</option>
+                  </optgroup>
+
+                  <optgroup label="REGULARIZACIÓN">
+                    <option value="PERSONAS REGULARIZADAS|TOTAL PERSONAS REGULARIZADAS">Regularizados (Total)</option>
+                    <option value="PERSONAS REGULARIZADAS|TRH">Regularizados (TRH)</option>
+                    <option value="PERSONAS REGULARIZADAS|UNIDAD FAMILIAR">Regularizados (Unidad Familiar)</option>
+                    <option value="PERSONAS REGULARIZADAS|DOCUMENTO VENCIDO">Regularizados (Doc. Vencido)</option>
+                  </optgroup>
+
+                  <optgroup label="REPATRIACIÓN">
+                    <option value="REPATRIADOS|TOTAL REPATRIADOS">Repatriados (Total)</option>
+                    <option value="REPATRIADOS|ADULTOS">Repatriados (Adultos)</option>
+                    <option value="REPATRIADOS|NNA ACOMPAÑADOS">Repatriados (NNA Acompañados)</option>
+                    <option value="REPATRIADOS|NNA NO ACOMPAÑADOS">Repatriados (NNA No Acompañados)</option>
+                  </optgroup>
+
+                  <optgroup label="INGRESOS AL PAÍS">
+                    <option value="INGRESOS AL PAIS|Total Ingresos">Ingresos al País (Total)</option>
+                    <option value="INGRESOS AL PAIS|Aéreo">Ingresos (Aéreo)</option>
+                    <option value="INGRESOS AL PAIS|Marítimos">Ingresos (Marítimo)</option>
+                    <option value="INGRESOS AL PAIS|Terrestre">Ingresos (Terrestre)</option>
+                  </optgroup>
+
+                  <optgroup label="RECAUDACIÓN / PRESUPUESTO">
+                    <option value="PRESUPUESTO|RECAUDADO">Recaudado</option>
+                    <option value="PRESUPUESTO|PARTICIPABLE">Presupuesto Participable</option>
+                    <option value="PRESUPUESTO|EJERCIDO">Presupuesto Ejercido</option>
+                  </optgroup>
+
+                  <optgroup label="PLANTILLA">
+                    <option value="PLANTILLA|AUTORIZADA">Plantilla Autorizada</option>
+                    <option value="PLANTILLA|ACTIVA">Plantilla Activa</option>
+                    <option value="PLANTILLA|EVENTUALES">Plantilla Eventuales</option>
+                    <option value="PLANTILLA|PRESUPUESTO">Presupuesto Plantilla</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <!-- Selected Active Metrics Badges -->
+              <div style="margin-top: 10px;">
+                <div style="font-size: 8.5px; font-weight: 700; color: var(--gris-oscuro); margin-bottom: 4px;">RUBROS EN COMPARACIÓN:</div>
+                <div id="cooperacionActiveBadges" style="display: flex; flex-wrap: wrap; gap: 4px; max-height: 120px; overflow-y: auto; padding: 2px;">
+                  <!-- Dynamic metric badges inserted here -->
+                </div>
+              </div>
+            </div>
+
+            <button class="stat-btn" id="btnSistemasCoop" onclick="selectSistemas()" style="margin-top:8px; width:100%; background:var(--arena-alpha); border-color:var(--arena);">
               <i class="fa-solid fa-server" style="margin-right:4px;"></i> SISTEMAS
             </button>
           </div>
@@ -1129,6 +1411,38 @@
         }
       }
 
+      // Function to toggle collapse state of country cards grid
+      function toggleCountryGrid(gridId) {
+        const grid = document.getElementById(gridId);
+        if (!grid) return;
+        const btn = grid.querySelector('.toggle-country-btn');
+        grid.classList.toggle('collapsed');
+        
+        const isCollapsed = grid.classList.contains('collapsed');
+        if (btn) {
+          btn.querySelector('span').innerText = isCollapsed ? 'Expandir' : 'Contraer';
+        }
+
+        // Adjust chart wrapper height if both grids or either grid is collapsed
+        const usaCollapsed = document.getElementById('gridUSA')?.classList.contains('collapsed');
+        const mexCollapsed = document.getElementById('gridMEX')?.classList.contains('collapsed');
+        const chartWrapper = document.querySelector('.chart-wrapper');
+
+        if (chartWrapper) {
+          if (usaCollapsed && mexCollapsed) {
+            chartWrapper.classList.add('expanded-chart');
+          } else {
+            chartWrapper.classList.remove('expanded-chart');
+          }
+        }
+
+        if (currentChart) {
+          setTimeout(() => {
+            currentChart.resize();
+          }, 320);
+        }
+      }
+
       document.addEventListener("DOMContentLoaded", () => {
         loadComparativoData();
       });
@@ -1190,6 +1504,12 @@
         ],
         'REPATRIACION': [
           { key: 'repatriados', label: 'REPATRIADOS' }
+        ],
+        'COOPERACIÓN': [
+          { key: 'cooperacion', label: 'COMPARATIVO COOPERACIÓN' }
+        ],
+        'COOPERACION': [
+          { key: 'cooperacion', label: 'COMPARATIVO COOPERACIÓN' }
         ]
       };
       
@@ -1221,6 +1541,245 @@
         }
       };
 
+      // State for COOPERACION multi-metric selector
+      let cooperacionSelectedMetrics = [];
+      const cooperacionPalette = ['#8b263e', '#1d3557', '#2a9d8f', '#e76f51', '#f4a261', '#457b9d', '#6a0572', '#2b2d42', '#3a86ff'];
+
+      function addCooperacionMetric(valStr) {
+        if (!valStr) return;
+        const parts = valStr.split('|');
+        if (parts.length < 2) return;
+        const cat = parts[0];
+        const sub = parts[1];
+
+        // Check if already added
+        if (cooperacionSelectedMetrics.some(m => m.cat === cat && m.sub === sub)) {
+          document.getElementById('selectCooperacionMetric').value = '';
+          return;
+        }
+
+        // Get option label text
+        const selectElem = document.getElementById('selectCooperacionMetric');
+        const selectedOpt = selectElem.options[selectElem.selectedIndex];
+        const label = selectedOpt ? selectedOpt.text : `${cat} - ${sub}`;
+        const color = cooperacionPalette[cooperacionSelectedMetrics.length % cooperacionPalette.length];
+
+        cooperacionSelectedMetrics.push({ cat, sub, label, color });
+        selectElem.value = '';
+        renderCooperacionBadges();
+        renderCooperacionChart();
+      }
+
+      function removeCooperacionMetric(index) {
+        cooperacionSelectedMetrics.splice(index, 1);
+        renderCooperacionBadges();
+        renderCooperacionChart();
+      }
+
+      let activeColorPopoverIndex = null;
+
+      function toggleColorPopover(event, index) {
+        event.stopPropagation();
+        const existing = document.getElementById('colorPopoverTooltip');
+        if (existing) {
+          existing.remove();
+          if (activeColorPopoverIndex === index) {
+            activeColorPopoverIndex = null;
+            return;
+          }
+        }
+
+        activeColorPopoverIndex = index;
+        const badgeElem = event.currentTarget.closest('.cooperacion-badge-item');
+        if (!badgeElem) return;
+
+        const m = cooperacionSelectedMetrics[index];
+        const rect = badgeElem.getBoundingClientRect();
+
+        const popover = document.createElement('div');
+        popover.id = 'colorPopoverTooltip';
+        popover.className = 'color-popover-tooltip';
+        popover.style.left = `${rect.left + rect.width / 2 - 80}px`;
+        popover.style.top = `${rect.top - 95}px`;
+
+        popover.innerHTML = `
+          <div style="font-size: 8px; font-weight: 700; color: #333; text-align: center; text-transform: uppercase;">CAMBIAR COLOR</div>
+          <div class="color-palette-dots">
+            ${cooperacionPalette.map(c => `<div class="color-dot" style="background:${c};" onclick="updateMetricColor(${index}, '${c}')"></div>`).join('')}
+          </div>
+          <div class="color-hex-input-row">
+            <input type="text" id="hexColorInput" value="${m.color}" maxlength="7" placeholder="#HEX" onchange="updateMetricColor(${index}, this.value)">
+            <input type="color" value="${m.color}" style="width:20px; height:18px; border:none; padding:0; background:none; cursor:pointer;" onchange="updateMetricColor(${index}, this.value)">
+          </div>
+        `;
+
+        document.body.appendChild(popover);
+
+        // Close when clicking outside
+        const closeListener = (e) => {
+          if (!popover.contains(e.target) && !badgeElem.contains(e.target)) {
+            popover.remove();
+            activeColorPopoverIndex = null;
+            document.removeEventListener('click', closeListener);
+          }
+        };
+        setTimeout(() => {
+          document.addEventListener('click', closeListener);
+        }, 50);
+      }
+
+      function updateMetricColor(index, newColor) {
+        if (!newColor) return;
+        if (!newColor.startsWith('#')) newColor = '#' + newColor;
+        // Validate hex color
+        if (/^#([0-9A-F]{3}){1,2}$/i.test(newColor)) {
+          cooperacionSelectedMetrics[index].color = newColor;
+          const pop = document.getElementById('colorPopoverTooltip');
+          if (pop) pop.remove();
+          activeColorPopoverIndex = null;
+          renderCooperacionBadges();
+          renderCooperacionChart();
+        }
+      }
+
+      function renderCooperacionBadges() {
+        const container = document.getElementById('cooperacionActiveBadges');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (cooperacionSelectedMetrics.length === 0) {
+          container.innerHTML = '<span style="font-size:8px; color:var(--gris);">Sin rubros seleccionados.</span>';
+          return;
+        }
+
+        cooperacionSelectedMetrics.forEach((m, idx) => {
+          const badge = document.createElement('div');
+          badge.className = 'cooperacion-badge-item';
+          badge.style.cssText = `
+            position: relative;
+            background: ${m.color};
+            color: #ffffff;
+            font-size: 8.5px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            user-select: none;
+          `;
+          badge.innerHTML = `
+            <span onclick="toggleColorPopover(event, ${idx})" title="Clic para cambiar color">${m.label}</span>
+            <i class="fa-solid fa-palette" style="font-size:7.5px; opacity:0.8;" onclick="toggleColorPopover(event, ${idx})" title="Cambiar color"></i>
+            <i class="fa-solid fa-xmark" style="cursor:pointer; opacity:0.8; margin-left:2px;" onclick="event.stopPropagation(); removeCooperacionMetric(${idx})" title="Quitar rubro"></i>
+          `;
+          container.appendChild(badge);
+        });
+      }
+
+      function renderCooperacionChart() {
+        const ctx = document.getElementById('comparativoChart').getContext('2d');
+        if (currentChart) {
+          currentChart.destroy();
+        }
+
+        const overlayContainer = document.getElementById('viajesOverlayContainer');
+        overlayContainer.innerHTML = '';
+        overlayContainer.style.display = 'none';
+
+        const plugins = (typeof ChartDataLabels !== 'undefined') ? [ChartDataLabels] : [];
+
+        // Build datasets from dbComparativoData
+        const datasets = [];
+
+        cooperacionSelectedMetrics.forEach((m, idx) => {
+          let seriesData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+          if (dbComparativoData) {
+            const catData = dbComparativoData[m.cat] || {};
+            const matchedKey = Object.keys(catData).find(k => k.trim().toUpperCase() === m.sub.toUpperCase());
+            if (matchedKey && catData[matchedKey]) {
+              seriesData = yearsLabels.map(y => parseInt(y)).map(yearNum => catData[matchedKey][yearNum] || catData[matchedKey][String(yearNum)] || 0);
+            }
+          }
+
+          datasets.push({
+            type: 'line',
+            label: m.label,
+            data: seriesData,
+            borderColor: m.color,
+            backgroundColor: m.color,
+            borderWidth: 2.5,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            fill: false,
+            tension: 0.35,
+            order: idx + 1,
+            datalabels: {
+              align: (idx % 2 === 0) ? 'top' : 'bottom',
+              anchor: 'center',
+              color: m.color,
+              font: { weight: 'bold', size: 9 },
+              formatter: (val) => val ? (val >= 1000000 ? (val / 1000000).toFixed(1) + 'M' : val.toLocaleString()) : ''
+            }
+          });
+        });
+
+        currentChart = new Chart(ctx, {
+          type: 'line',
+          plugins: plugins,
+          data: {
+            labels: yearsLabels,
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 25,
+                bottom: 5,
+                left: 10,
+                right: 10
+              }
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                align: 'start',
+                labels: {
+                  boxWidth: 12,
+                  boxHeight: 12,
+                  font: { size: 10, weight: 'bold', family: 'DM Sans' }
+                }
+              },
+              tooltip: {
+                enabled: true,
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()}`
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: true,
+                  color: '#d4d0c4',
+                  lineDash: [3, 3]
+                },
+                ticks: { display: false }
+              },
+              y: {
+                display: false,
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      }
+
       function selectSistemas() {
         // Highlight active Sistemas buttons in red
         const btnMain = document.getElementById('btnSistemasMain');
@@ -1251,6 +1810,31 @@
         resetSistemasBtnStyle();
 
         document.getElementById('panelMainView').style.display = 'none';
+        
+        if (categoryName.includes('COOPERAC')) {
+          document.getElementById('panelSubView').style.display = 'none';
+          const coopPanel = document.getElementById('panelCooperacionView');
+          if (coopPanel) coopPanel.style.display = 'flex';
+
+          document.getElementById('summaryDefaultView').style.display = 'none';
+          document.getElementById('sistemasDisplayView').style.display = 'none';
+          document.getElementById('chartDisplayView').style.display = 'block';
+
+          // Initialize Cooperación with default selected metrics if empty
+          if (cooperacionSelectedMetrics.length === 0) {
+            cooperacionSelectedMetrics = [
+              { cat: 'ACCIONES DE CONTROL', sub: 'TOTAL ENC', label: 'Encuentros (Total)', color: '#8b263e' },
+              { cat: 'RESCATES', sub: 'TOTAL RES', label: 'Rescates (Total)', color: '#1d3557' }
+            ];
+          }
+          renderCooperacionBadges();
+          renderCooperacionChart();
+          return;
+        }
+
+        const coopPanel = document.getElementById('panelCooperacionView');
+        if (coopPanel) coopPanel.style.display = 'none';
+
         const panelSubView = document.getElementById('panelSubView');
         panelSubView.style.display = 'flex';
         document.getElementById('btnActiveCategory').innerText = categoryName;
@@ -1289,6 +1873,9 @@
         resetSistemasBtnStyle();
 
         document.getElementById('panelSubView').style.display = 'none';
+        const coopPanel = document.getElementById('panelCooperacionView');
+        if (coopPanel) coopPanel.style.display = 'none';
+
         document.getElementById('panelMainView').style.display = 'block';
 
         document.getElementById('chartDisplayView').style.display = 'none';

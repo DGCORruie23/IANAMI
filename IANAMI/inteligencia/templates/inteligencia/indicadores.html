@@ -389,12 +389,17 @@
       }
       .trend-arrow {
         font-size: 32px;
-        transform: rotate(45deg);
         line-height: 1;
+        display: inline-block;
+        transition: transform 0.3s ease;
       }
       .trend-arrow.up {
         transform: rotate(-45deg);
         color: var(--verde);
+      }
+      .trend-arrow.down {
+        transform: rotate(45deg);
+        color: var(--rojo);
       }
       .chart-container-wrapper {
         position: relative;
@@ -663,8 +668,8 @@
                 <div class="panel-body">
                   <div class="bullets-container" id="bullets-chart-mat">
                     <ul>
-                      <li>La entidad con mayor volumen de registros en la última semana es <strong class="highlight-green" id="c2-mat-bullet-top-curr">Estado de México</strong>, misma que sustituye a <strong class="highlight-green" id="c2-mat-bullet-top-prev">Quintana Roo</strong> con respecto a la semana anterior.</li>
-                      <li>La tendencia en la serie histórica apunta que las entidades <strong class="highlight-red">Quintana Roo</strong> y <strong class="highlight-green">Chiapas</strong> tienen el mayor volumen de registros.</li>
+                      <li id="c2-mat-bullet-1">La entidad con mayor volumen de registros en la última semana es <strong style="color: #104e3b;" id="c2-mat-bullet-top-curr">Estado de México</strong>...</li>
+                      <li id="c2-mat-bullet-2">La tendencia en la serie histórica apunta que las entidades <strong style="color: #8a1a32;">Quintana Roo</strong> y <strong style="color: #295f8a;">Chiapas</strong> tienen el mayor volumen de registros.</li>
                     </ul>
                   </div>
                   <div class="chart-container-wrapper">
@@ -674,6 +679,7 @@
                     </div>
                     <canvas id="chart-top-states-mat"></canvas>
                   </div>
+                  <div id="legend-top-states-mat" class="state-legend" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 12px; border-top: 1px solid var(--borde); padding-top: 8px; font-size: 11px; font-weight: 600; font-family: 'DM Sans', sans-serif;"></div>
                 </div>
               </div>
 
@@ -683,8 +689,8 @@
                 <div class="panel-body">
                   <div class="bullets-container" id="bullets-chart-nac">
                     <ul>
-                      <li>La OR con mayor volumen de registros en la última semana es <strong class="highlight-green" id="c2-nac-bullet-top-curr">Estado de México</strong>, misma que sustituye a <strong class="highlight-green" id="c2-nac-bullet-top-prev">Quintana Roo</strong> con respecto a la semana anterior.</li>
-                      <li>La tendencia en la serie histórica apunta que las OR <strong class="highlight-red">Quintana Roo</strong> y <strong class="highlight-green">Chiapas</strong> son las OR con mayor volumen de registros.</li>
+                      <li id="c2-nac-bullet-1">La OR con mayor volumen de registros en la última semana es <strong style="color: #104e3b;" id="c2-nac-bullet-top-curr">Estado de México</strong>...</li>
+                      <li id="c2-nac-bullet-2">La tendencia en la serie histórica apunta que las OR <strong style="color: #8a1a32;">Quintana Roo</strong> y <strong style="color: #295f8a;">Chiapas</strong> son las OR con mayor volumen de registros.</li>
                     </ul>
                   </div>
                   <div class="chart-container-wrapper">
@@ -694,6 +700,7 @@
                     </div>
                     <canvas id="chart-top-states-nac"></canvas>
                   </div>
+                  <div id="legend-top-states-nac" class="state-legend" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 12px; border-top: 1px solid var(--borde); padding-top: 8px; font-size: 11px; font-weight: 600; font-family: 'DM Sans', sans-serif;"></div>
                 </div>
               </div>
             </div>
@@ -741,11 +748,29 @@
           <!-- SUB-CONTENT 2: Trámites Migratorios -->
           <div id="regulacion-tramites-content" class="regulacion-sub-content" style="display: none;">
             <!-- Filter Dropdown Select -->
-            <div style="background: var(--nav-bg); border: 1px solid var(--borde); border-radius: 6px; padding: 15px; margin-bottom: 24px; display: flex; align-items: center; gap: 15px;">
-              <label style="color: var(--oro); font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Seleccionar Trámite Misionado:</label>
-              <select id="select-tramite" onchange="loadTramitesData()" style="flex: 1; max-width: 600px; background: #fff; border: 1px solid var(--borde); border-radius: 4px; padding: 8px 12px; font-family: 'DM Sans', sans-serif; font-size: 12px; color: #333; font-weight: 600; cursor: pointer;">
-                <option value="">-- Seleccionar Trámite --</option>
-              </select>
+            <div style="background: var(--nav-bg); border: 1px solid var(--borde); border-radius: 6px; padding: 15px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 15px;">
+              <div style="display: flex; align-items: center; gap: 10px; flex: 2; min-width: 280px;">
+                <label style="color: var(--oro); font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Seleccionar Trámite:</label>
+                <select id="select-tramite" onchange="onTramiteChange()" style="width: 100%; background: #fff; border: 1px solid var(--borde); border-radius: 4px; padding: 8px 12px; font-family: 'DM Sans', sans-serif; font-size: 12px; color: #333; font-weight: 600; cursor: pointer;">
+                  <option value="">-- Seleccionar Trámite --</option>
+                </select>
+              </div>
+
+              <!-- State Selector 1 -->
+              <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 190px;">
+                <label style="color: #104e3b; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 12px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Estado A:</label>
+                <select id="select-tramite-estado1" onchange="loadTramitesData()" style="width: 100%; background: #fff; border: 1px solid var(--borde); border-radius: 4px; padding: 8px 12px; font-family: 'DM Sans', sans-serif; font-size: 12px; color: #333; font-weight: 600; cursor: pointer;">
+                  <option value="">-- Top 1 (Auto) --</option>
+                </select>
+              </div>
+
+              <!-- State Selector 2 -->
+              <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 190px;">
+                <label style="color: #8a7c5a; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 12px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Estado B:</label>
+                <select id="select-tramite-estado2" onchange="loadTramitesData()" style="width: 100%; background: #fff; border: 1px solid var(--borde); border-radius: 4px; padding: 8px 12px; font-family: 'DM Sans', sans-serif; font-size: 12px; color: #333; font-weight: 600; cursor: pointer;">
+                  <option value="">-- Top 2 (Auto) --</option>
+                </select>
+              </div>
             </div>
 
             <!-- 4 Charts Grid -->
@@ -1018,6 +1043,144 @@
       let controlChart1 = null;
       let controlChart2 = null;
 
+      if (typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+      }
+
+      // Color mapping helper for points and legends (Global Scope)
+      const stateColorMap = {
+        'QUINTANA ROO': '#8a1a32',      // Guinda / Rojo
+        'ESTADO DE MEXICO': '#104e3b',  // Verde oscuro
+        'MEXICO': '#104e3b',
+        'CHIAPAS': '#295f8a',           // Azul
+        'CHIHUAHUA': '#0284c7',         // Cyan / Azul claro
+        'NUEVO LEON': '#133b5c',        // Azul noche
+        'CDMX': '#ffb400',              // Amarillo / Oro
+        'DISTRITO FEDERAL': '#ffb400',
+        'CIUDAD DE MEXICO': '#ffb400',
+        'TABASCO': '#8c4b7e',           // Púrpura
+        'VERACRUZ': '#d97724',          // Naranja
+        'TAMAULIPAS': '#4a7c59',        // Verde esmeralda
+        'BAJA CALIFORNIA': '#5b4a7c'    // Indigo
+      };
+
+      const fallbackPalette = [
+        '#8a1a32', '#104e3b', '#295f8a', '#d97724', '#8c4b7e',
+        '#133b5c', '#ffb400', '#4a7c59', '#5b4a7c', '#8a7c5a'
+      ];
+
+      // PIE COLOR PALETTE: Olive, Green, Dark Gray, Light Gray, Light Blue, Maroon
+      const pieColors = ['#8a7c5a', '#104e3b', '#707070', '#d3d3d3', '#a0c4ff', '#801c2d'];
+
+      function getCountryName(name) {
+        if (!name) return '';
+        const clean = String(name).trim();
+        const normalized = clean.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        
+        const countryMap = {
+          'CUBANA': 'Cuba',
+          'CUBA': 'Cuba',
+          'GUATEMALTECA': 'Guatemala',
+          'GUATEMALA': 'Guatemala',
+          'HONDURENA': 'Honduras',
+          'HONDURAS': 'Honduras',
+          'VENEZOLANA': 'Venezuela',
+          'VENEZUELA': 'Venezuela',
+          'SALVADORENA': 'El Salvador',
+          'EL SALVADOR': 'El Salvador',
+          'COLOMBIANA': 'Colombia',
+          'COLOMBIA': 'Colombia',
+          'MEXICANA': 'México',
+          'MEXICO': 'México',
+          'ESTADOUNIDENSE': 'Estados Unidos',
+          'ESTADOS UNIDOS': 'Estados Unidos',
+          'NICARAGUENSE': 'Nicaragua',
+          'NICARAGUA': 'Nicaragua',
+          'HAITIANA': 'Haití',
+          'HAITI': 'Haití',
+          'PERUANA': 'Perú',
+          'PERU': 'Perú',
+          'ECUATORIANA': 'Ecuador',
+          'ECUADOR': 'Ecuador',
+          'BRASILENA': 'Brasil',
+          'BRASILEÑA': 'Brasil',
+          'BRASIL': 'Brasil',
+          'ARGENTINA': 'Argentina',
+          'CHILENA': 'Chile',
+          'CHILE': 'Chile',
+          'ESPANOLA': 'España',
+          'ESPANA': 'España',
+          'CHINA': 'China',
+          'RUSA': 'Rusia',
+          'RUSIA': 'Rusia',
+          'DOMINICANA': 'República Dominicana',
+          'REPUBLICA DOMINICANA': 'República Dominicana',
+          'CANADIENSE': 'Canadá',
+          'CANADA': 'Canadá',
+          'BELICENA': 'Belice',
+          'BELICE': 'Belice',
+          'COSTARRICENSE': 'Costa Rica',
+          'COSTA RICA': 'Costa Rica',
+          'PANAMENA': 'Panamá',
+          'PANAMA': 'Panamá',
+          'BOLIVIANA': 'Bolivia',
+          'BOLIVIA': 'Bolivia',
+          'PARAGUAYA': 'Paraguay',
+          'URUGUAYA': 'Uruguay',
+          'OTROS': 'Otros'
+        };
+
+        if (countryMap[normalized]) return countryMap[normalized];
+        return clean;
+      }
+
+      function getPointColor(name) {
+        if (!name || name === 'S/D') return '#808080';
+        const cleanName = String(name).toUpperCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        for (const [key, color] of Object.entries(stateColorMap)) {
+          const cleanKey = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          if (cleanName.includes(cleanKey)) return color;
+        }
+        let hash = 0;
+        for (let i = 0; i < cleanName.length; i++) {
+          hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash) % fallbackPalette.length;
+        return fallbackPalette[index];
+      }
+
+      function getPointColors(names) {
+        return names.map(getPointColor);
+      }
+
+      function renderStateLegend(containerId, names) {
+        const container = document.getElementById(containerId);
+        if (!container || !names) return;
+        
+        const uniqueStates = [];
+        const seen = new Set();
+        
+        names.forEach(name => {
+          if (!name) return;
+          const clean = String(name).trim();
+          if (!seen.has(clean.toUpperCase())) {
+            seen.add(clean.toUpperCase());
+            uniqueStates.push(clean);
+          }
+        });
+
+        container.innerHTML = uniqueStates.map(state => {
+          const color = getPointColor(state);
+          const cleanLabel = state === 'S/D' ? 'Sin Datos (S/D)' : state;
+          return `
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <span style="width: 10px; height: 10px; border-radius: 2px; background: ${color}; display: inline-block;"></span>
+              <span>${cleanLabel}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
       function showSubsection(sub) {
         // Remove active class from all sections
         document.querySelectorAll(".section").forEach((s) => {
@@ -1097,14 +1260,26 @@
       function updateBulletPoints(data) {
         const sum = data.summary;
         
+        function calcPctChange(arr) {
+          if (!arr || arr.length < 2) return 0;
+          const curr = arr[arr.length - 1];
+          const prev = arr[arr.length - 2];
+          if (prev > 0) {
+            return Math.round(((curr - prev) / prev) * 10000) / 100;
+          } else if (curr > 0) {
+            return 100;
+          }
+          return 0;
+        }
+
         // Bullet 1: Trend percentage
+        const changeValTotal = calcPctChange(data.totales);
         const trendEl = document.getElementById('c1-bullet-trend');
-        const changeVal = data.pct_change_total;
-        if (changeVal >= 0) {
-          trendEl.textContent = `Incremento del +${changeVal}%`;
+        if (changeValTotal >= 0) {
+          trendEl.textContent = `Incremento del +${changeValTotal}%`;
           trendEl.className = 'highlight-green';
         } else {
-          trendEl.textContent = `Decremento del ${changeVal}%`;
+          trendEl.textContent = `Decremento del ${changeValTotal}%`;
           trendEl.className = 'highlight-red';
         }
         
@@ -1116,32 +1291,112 @@
         document.getElementById('c1-bullet-nac-pct').textContent = sum.last_nac_pct;
         document.getElementById('c1-bullet-nac-val').textContent = sum.last_nac;
 
+        function getTop2HistoricalStates(names, vols) {
+          const counts = {};
+          names.forEach((name, i) => {
+            if (!name || name === 'S/D') return;
+            const clean = String(name).trim();
+            counts[clean] = (counts[clean] || 0) + (vols[i] || 1);
+          });
+          const sorted = Object.keys(counts).sort((a, b) => counts[b] - counts[a]).slice(0, 2);
+          return sorted.map(name => ({ name, vol: counts[name] }));
+        }
+
         // Bullet 2A: Top state Matrimonios info
-        document.getElementById('c2-mat-bullet-top-curr').textContent = sum.last_top_state_mat;
-        document.getElementById('c2-mat-bullet-top-prev').textContent = sum.prev_top_state_mat;
+        const matNames = data.top_state_mat_names || [];
+        const matVols = data.top_state_mat_volumes || [];
+        const changeValMat = calcPctChange(matVols);
+
+        if (matNames.length >= 2) {
+          const currMatState = matNames[matNames.length - 1];
+          const currMatVol = matVols[matVols.length - 1];
+          const prevMatState = matNames[matNames.length - 2];
+          const prevMatVol = matVols[matVols.length - 2];
+          const currMatColor = getPointColor(currMatState);
+          const prevMatColor = getPointColor(prevMatState);
+
+          let matBulletHtml = `La entidad con mayor volumen de registros en la última semana es <strong style="color: ${currMatColor};">${currMatState} (${currMatVol})</strong>, `;
+
+          if (currMatState.toUpperCase().trim() === prevMatState.toUpperCase().trim()) {
+            if (changeValMat > 0) {
+              matBulletHtml += `misma que se mantiene respecto a la semana anterior pero creció un +${changeValMat}% (de ${prevMatVol} a ${currMatVol}).`;
+            } else if (changeValMat < 0) {
+              matBulletHtml += `misma que se mantiene respecto a la semana anterior pero disminuyó un ${changeValMat}% (de ${prevMatVol} a ${currMatVol}).`;
+            } else {
+              matBulletHtml += `misma que se mantiene sin cambios respecto a la semana anterior (${currMatVol}).`;
+            }
+          } else {
+            matBulletHtml += `misma que sustituye a <strong style="color: ${prevMatColor};">${prevMatState} (${prevMatVol})</strong> con respecto a la semana anterior.`;
+          }
+
+          const b1 = document.getElementById('c2-mat-bullet-1');
+          if (b1) b1.innerHTML = matBulletHtml;
+
+          const top2Mat = getTop2HistoricalStates(matNames, matVols);
+          const bMat2 = document.getElementById('c2-mat-bullet-2');
+          if (bMat2 && top2Mat.length >= 2) {
+            const s1 = top2Mat[0].name, v1 = top2Mat[0].vol, c1 = getPointColor(s1);
+            const s2 = top2Mat[1].name, v2 = top2Mat[1].vol, c2 = getPointColor(s2);
+            bMat2.innerHTML = `La tendencia en la serie histórica apunta que las entidades <strong style="color: ${c1};">${s1} (${v1})</strong> y <strong style="color: ${c2};">${s2} (${v2})</strong> tienen el mayor volumen de registros.`;
+          }
+        }
 
         // Bullet 2B: Top state Nacimientos info
-        document.getElementById('c2-nac-bullet-top-curr').textContent = sum.last_top_state_nac;
-        document.getElementById('c2-nac-bullet-top-prev').textContent = sum.prev_top_state_nac;
+        const nacNames = data.top_state_nac_names || [];
+        const nacVols = data.top_state_nac_volumes || [];
+        const changeValNac = calcPctChange(nacVols);
 
-        // Trend indicator chart 1
+        if (nacNames.length >= 2) {
+          const currNacState = nacNames[nacNames.length - 1];
+          const currNacVol = nacVols[nacVols.length - 1];
+          const prevNacState = nacNames[nacNames.length - 2];
+          const prevNacVol = nacVols[nacVols.length - 2];
+          const currNacColor = getPointColor(currNacState);
+          const prevNacColor = getPointColor(prevNacState);
+
+          let nacBulletHtml = `La OR con mayor volumen de registros en la última semana es <strong style="color: ${currNacColor};">${currNacState} (${currNacVol})</strong>, `;
+
+          if (currNacState.toUpperCase().trim() === prevNacState.toUpperCase().trim()) {
+            if (changeValNac > 0) {
+              nacBulletHtml += `misma que se mantiene respecto a la semana anterior pero creció un +${changeValNac}% (de ${prevNacVol} a ${currNacVol}).`;
+            } else if (changeValNac < 0) {
+              nacBulletHtml += `misma que se mantiene respecto a la semana anterior pero disminuyó un ${changeValNac}% (de ${prevNacVol} a ${currNacVol}).`;
+            } else {
+              nacBulletHtml += `misma que se mantiene sin cambios respecto a la semana anterior (${currNacVol}).`;
+            }
+          } else {
+            nacBulletHtml += `misma que sustituye a <strong style="color: ${prevNacColor};">${prevNacState} (${prevNacVol})</strong> con respecto a la semana anterior.`;
+          }
+
+          const b2 = document.getElementById('c2-nac-bullet-1');
+          if (b2) b2.innerHTML = nacBulletHtml;
+
+          const top2Nac = getTop2HistoricalStates(nacNames, nacVols);
+          const bNac2 = document.getElementById('c2-nac-bullet-2');
+          if (bNac2 && top2Nac.length >= 2) {
+            const s1 = top2Nac[0].name, v1 = top2Nac[0].vol, c1 = getPointColor(s1);
+            const s2 = top2Nac[1].name, v2 = top2Nac[1].vol, c2 = getPointColor(s2);
+            bNac2.innerHTML = `La tendencia en la serie histórica apunta que las OR <strong style="color: ${c1};">${s1} (${v1})</strong> y <strong style="color: ${c2};">${s2} (${v2})</strong> son las OR con mayor volumen de registros.`;
+          }
+        }
+
+        // Trend indicator chart 1 (Total)
         const c1TrendVal = document.getElementById('c1-trend-val');
         const c1TrendArrow = document.getElementById('c1-trend-arrow');
-        c1TrendVal.textContent = (changeVal >= 0 ? '+' : '') + changeVal + '%';
-        if (changeVal >= 0) {
+        c1TrendVal.textContent = (changeValTotal >= 0 ? '+' : '') + changeValTotal + '%';
+        if (changeValTotal >= 0) {
           c1TrendVal.style.color = 'var(--verde)';
           c1TrendArrow.className = 'trend-arrow up';
           c1TrendArrow.style.color = 'var(--verde)';
         } else {
           c1TrendVal.style.color = 'var(--rojo)';
-          c1TrendArrow.className = 'trend-arrow';
+          c1TrendArrow.className = 'trend-arrow down';
           c1TrendArrow.style.color = 'var(--rojo)';
         }
 
-        // Trend indicator chart 2A (Matrimonios)
+        // Trend indicator chart 2A (Matrimonios / Entidad)
         const c2MatTrendVal = document.getElementById('c2-mat-trend-val');
         const c2MatTrendArrow = document.getElementById('c2-mat-trend-arrow');
-        const changeValMat = data.pct_change_mat_state;
         c2MatTrendVal.textContent = (changeValMat >= 0 ? '+' : '') + changeValMat + '%';
         if (changeValMat >= 0) {
           c2MatTrendVal.style.color = 'var(--verde)';
@@ -1149,14 +1404,13 @@
           c2MatTrendArrow.style.color = 'var(--verde)';
         } else {
           c2MatTrendVal.style.color = 'var(--rojo)';
-          c2MatTrendArrow.className = 'trend-arrow';
+          c2MatTrendArrow.className = 'trend-arrow down';
           c2MatTrendArrow.style.color = 'var(--rojo)';
         }
 
-        // Trend indicator chart 2B (Nacimientos)
+        // Trend indicator chart 2B (Nacimientos / OR)
         const c2NacTrendVal = document.getElementById('c2-nac-trend-val');
         const c2NacTrendArrow = document.getElementById('c2-nac-trend-arrow');
-        const changeValNac = data.pct_change_nac_state;
         c2NacTrendVal.textContent = (changeValNac >= 0 ? '+' : '') + changeValNac + '%';
         if (changeValNac >= 0) {
           c2NacTrendVal.style.color = 'var(--verde)';
@@ -1164,7 +1418,7 @@
           c2NacTrendArrow.style.color = 'var(--verde)';
         } else {
           c2NacTrendVal.style.color = 'var(--rojo)';
-          c2NacTrendArrow.className = 'trend-arrow';
+          c2NacTrendArrow.className = 'trend-arrow down';
           c2NacTrendArrow.style.color = 'var(--rojo)';
         }
 
@@ -1175,9 +1429,18 @@
           
           const prevList = document.getElementById('pie-prev-list');
           prevList.innerHTML = '';
-          data.prev_week_breakdown.breakdown.forEach(item => {
+          data.prev_week_breakdown.breakdown.forEach((item, idx) => {
             const li = document.createElement('li');
-            li.innerHTML = `<strong>${item.name}</strong> con ${item.count} (${item.pct}%)`;
+            li.style.display = 'flex';
+            li.style.alignItems = 'center';
+            li.style.gap = '6px';
+            li.style.marginBottom = '4px';
+            const countryName = getCountryName(item.name);
+            const color = pieColors[idx % pieColors.length];
+            li.innerHTML = `
+              <span style="width: 10px; height: 10px; border-radius: 2px; background: ${color}; display: inline-block; flex-shrink: 0;"></span>
+              <span><strong>${countryName}</strong> con ${item.count} (${item.pct}%)</span>
+            `;
             prevList.appendChild(li);
           });
         }
@@ -1188,9 +1451,18 @@
           
           const currList = document.getElementById('pie-curr-list');
           currList.innerHTML = '';
-          data.last_week_breakdown.breakdown.forEach(item => {
+          data.last_week_breakdown.breakdown.forEach((item, idx) => {
             const li = document.createElement('li');
-            li.innerHTML = `<strong>${item.name}</strong> con ${item.count} (${item.pct}%)`;
+            li.style.display = 'flex';
+            li.style.alignItems = 'center';
+            li.style.gap = '6px';
+            li.style.marginBottom = '4px';
+            const countryName = getCountryName(item.name);
+            const color = pieColors[idx % pieColors.length];
+            li.innerHTML = `
+              <span style="width: 10px; height: 10px; border-radius: 2px; background: ${color}; display: inline-block; flex-shrink: 0;"></span>
+              <span><strong>${countryName}</strong> con ${item.count} (${item.pct}%)</span>
+            `;
             currList.appendChild(li);
           });
         }
@@ -1391,9 +1663,6 @@
                 labels: {
                   font: { family: 'DM Sans', size: 10, weight: 600 }
                 }
-              },
-              datalabels: {
-                display: false
               }
             },
             scales: {
@@ -1571,9 +1840,6 @@
                 labels: {
                   font: { family: 'DM Sans', size: 10, weight: 600 }
                 }
-              },
-              datalabels: {
-                display: false
               }
             },
             scales: {
@@ -1726,9 +1992,6 @@
                 labels: {
                   font: { family: 'DM Sans', size: 10, weight: 600 }
                 }
-              },
-              datalabels: {
-                display: false
               }
             },
             scales: {
@@ -1743,27 +2006,43 @@
           }
         });
 
-        // Function helper to dynamically color point markers in line charts
-        function getPointColors(names) {
-          return names.map(name => {
-            const cleanName = String(name).toUpperCase().trim();
-            if (cleanName.includes('QUINTANA ROO')) return '#8a1a32'; // Red
-            if (cleanName.includes('MEXICO')) return '#104e3b'; // Green
-            if (cleanName.includes('CHIAPAS')) return '#295f8a'; // Blue
-            if (cleanName.includes('NUEVO LEON')) return '#133b5c'; // Dark Blue
-            if (cleanName.includes('CDMX') || cleanName.includes('DISTRITO FEDERAL') || cleanName.includes('CIUDAD DE MEXICO')) return '#ffb400'; // Yellow
-            return '#808080'; // Gray
-          });
-        }
-
         // CHART 2A: REGISTRO CIVIL MAYOR VOLUMEN - MATRIMONIO
         const ctx2Mat = document.getElementById('chart-top-states-mat').getContext('2d');
         if (topStatesMatChart) {
           topStatesMatChart.destroy();
         }
         const pointColorsMat = getPointColors(data.top_state_mat_names);
+
+        const topStatesMatLabelsPlugin = {
+          id: 'topStatesMatLabelsPlugin',
+          afterDatasetsDraw(chart) {
+            if (window.ChartDataLabels && chart.options.plugins && chart.options.plugins.datalabels && chart.options.plugins.datalabels.display !== false) {
+              return;
+            }
+            const { ctx } = chart;
+            ctx.save();
+            ctx.font = 'bold 10px "DM Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            const meta = chart.getDatasetMeta(0);
+            if (!meta || meta.hidden) return;
+
+            meta.data.forEach((point, index) => {
+              const val = data.top_state_mat_volumes[index];
+              if (val !== undefined && val !== null) {
+                const labelStr = `${val}`;
+                ctx.fillStyle = pointColorsMat[index] || '#8a7c5a';
+                ctx.fillText(labelStr, point.x, point.y - 6);
+              }
+            });
+            ctx.restore();
+          }
+        };
+
         topStatesMatChart = new Chart(ctx2Mat, {
           type: 'line',
+          plugins: [topStatesMatLabelsPlugin],
           data: {
             labels: data.labels,
             datasets: [{
@@ -1777,12 +2056,27 @@
               pointBackgroundColor: pointColorsMat,
               pointBorderColor: pointColorsMat,
               tension: 0.1,
-              fill: false
+              fill: false,
+              datalabels: {
+                display: true,
+                align: 'top',
+                anchor: 'end',
+                offset: 4,
+                font: { family: 'DM Sans', size: 10, weight: 'bold' },
+                formatter: function(value) {
+                  return value;
+                }
+              }
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 28
+              }
+            },
             plugins: {
               legend: { display: false },
               tooltip: {
@@ -1800,6 +2094,7 @@
             }
           }
         });
+        renderStateLegend('legend-top-states-mat', data.top_state_mat_names);
 
         // CHART 2B: REGISTRO CIVIL MAYOR VOLUMEN - NACIMIENTO
         const ctx2Nac = document.getElementById('chart-top-states-nac').getContext('2d');
@@ -1807,8 +2102,37 @@
           topStatesNacChart.destroy();
         }
         const pointColorsNac = getPointColors(data.top_state_nac_names);
+
+        const topStatesNacLabelsPlugin = {
+          id: 'topStatesNacLabelsPlugin',
+          afterDatasetsDraw(chart) {
+            if (window.ChartDataLabels && chart.options.plugins && chart.options.plugins.datalabels && chart.options.plugins.datalabels.display !== false) {
+              return;
+            }
+            const { ctx } = chart;
+            ctx.save();
+            ctx.font = 'bold 10px "DM Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            const meta = chart.getDatasetMeta(0);
+            if (!meta || meta.hidden) return;
+
+            meta.data.forEach((point, index) => {
+              const val = data.top_state_nac_volumes[index];
+              if (val !== undefined && val !== null) {
+                const labelStr = `${val}`;
+                ctx.fillStyle = pointColorsNac[index] || '#8a7c5a';
+                ctx.fillText(labelStr, point.x, point.y - 6);
+              }
+            });
+            ctx.restore();
+          }
+        };
+
         topStatesNacChart = new Chart(ctx2Nac, {
           type: 'line',
+          plugins: [topStatesNacLabelsPlugin],
           data: {
             labels: data.labels,
             datasets: [{
@@ -1822,12 +2146,27 @@
               pointBackgroundColor: pointColorsNac,
               pointBorderColor: pointColorsNac,
               tension: 0.1,
-              fill: false
+              fill: false,
+              datalabels: {
+                display: true,
+                align: 'top',
+                anchor: 'end',
+                offset: 4,
+                font: { family: 'DM Sans', size: 10, weight: 'bold' },
+                formatter: function(value) {
+                  return value;
+                }
+              }
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 28
+              }
+            },
             plugins: {
               legend: { display: false },
               tooltip: {
@@ -1845,9 +2184,40 @@
             }
           }
         });
+        renderStateLegend('legend-top-states-nac', data.top_state_nac_names);
 
         // PIE COLOR PALETTE: Olive, Green, Dark Gray, Light Gray, Light Blue, Maroon
         const pieColors = ['#8a7c5a', '#104e3b', '#707070', '#d3d3d3', '#a0c4ff', '#801c2d'];
+
+        const pieLabelsPlugin = {
+          id: 'pieLabelsPlugin',
+          afterDatasetsDraw(chart) {
+            if (window.ChartDataLabels && chart.options.plugins && chart.options.plugins.datalabels && chart.options.plugins.datalabels.display !== false) {
+              return;
+            }
+            const { ctx } = chart;
+            ctx.save();
+            ctx.font = 'bold 11px "DM Sans", sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const meta = chart.getDatasetMeta(0);
+            if (!meta || meta.hidden || !meta.data) {
+              ctx.restore();
+              return;
+            }
+
+            meta.data.forEach((element, index) => {
+              const val = chart.data.datasets[0].data[index];
+              if (val !== undefined && val !== null && val > 0) {
+                const pos = element.tooltipPosition();
+                ctx.fillText(`${val}%`, pos.x, pos.y);
+              }
+            });
+            ctx.restore();
+          }
+        };
 
         // CHART 3: PIE PREVIOUS WEEK
         if (data.prev_week_breakdown && data.prev_week_breakdown.total > 0) {
@@ -1855,7 +2225,7 @@
           if (piePrevChart) {
             piePrevChart.destroy();
           }
-          const prevNacLabels = data.prev_week_breakdown.breakdown.map(item => item.name);
+          const prevNacLabels = data.prev_week_breakdown.breakdown.map(item => getCountryName(item.name));
           const prevNacValues = data.prev_week_breakdown.breakdown.map(item => item.pct);
           if (data.prev_week_breakdown.others.pct > 0) {
             prevNacLabels.push('Otros');
@@ -1863,13 +2233,22 @@
           }
           piePrevChart = new Chart(ctx3, {
             type: 'pie',
+            plugins: [pieLabelsPlugin],
             data: {
               labels: prevNacLabels,
               datasets: [{
                 data: prevNacValues,
                 backgroundColor: pieColors,
                 borderWidth: 1,
-                borderColor: '#fff'
+                borderColor: '#fff',
+                datalabels: {
+                  display: true,
+                  color: '#ffffff',
+                  font: { family: 'DM Sans', size: 11, weight: 'bold' },
+                  formatter: function(value) {
+                    return value ? value + '%' : '';
+                  }
+                }
               }]
             },
             options: {
@@ -1877,6 +2256,14 @@
               maintainAspectRatio: false,
               plugins: {
                 legend: { display: false },
+                datalabels: {
+                  display: true,
+                  color: '#ffffff',
+                  font: { family: 'DM Sans', size: 11, weight: 'bold' },
+                  formatter: function(value) {
+                    return value ? value + '%' : '';
+                  }
+                },
                 tooltip: {
                   callbacks: {
                     label: function(context) {
@@ -1895,7 +2282,7 @@
           if (pieCurrChart) {
             pieCurrChart.destroy();
           }
-          const currNacLabels = data.last_week_breakdown.breakdown.map(item => item.name);
+          const currNacLabels = data.last_week_breakdown.breakdown.map(item => getCountryName(item.name));
           const currNacValues = data.last_week_breakdown.breakdown.map(item => item.pct);
           if (data.last_week_breakdown.others.pct > 0) {
             currNacLabels.push('Otros');
@@ -1903,13 +2290,22 @@
           }
           pieCurrChart = new Chart(ctx4, {
             type: 'pie',
+            plugins: [pieLabelsPlugin],
             data: {
               labels: currNacLabels,
               datasets: [{
                 data: currNacValues,
                 backgroundColor: pieColors,
                 borderWidth: 1,
-                borderColor: '#fff'
+                borderColor: '#fff',
+                datalabels: {
+                  display: true,
+                  color: '#ffffff',
+                  font: { family: 'DM Sans', size: 11, weight: 'bold' },
+                  formatter: function(value) {
+                    return value ? value + '%' : '';
+                  }
+                }
               }]
             },
             options: {
@@ -1917,6 +2313,14 @@
               maintainAspectRatio: false,
               plugins: {
                 legend: { display: false },
+                datalabels: {
+                  display: true,
+                  color: '#ffffff',
+                  font: { family: 'DM Sans', size: 11, weight: 'bold' },
+                  formatter: function(value) {
+                    return value ? value + '%' : '';
+                  }
+                },
                 tooltip: {
                   callbacks: {
                     label: function(context) {
@@ -1964,15 +2368,65 @@
         }
       }
 
+      function onTramiteChange() {
+        const s1 = document.getElementById('select-tramite-estado1');
+        const s2 = document.getElementById('select-tramite-estado2');
+        if (s1) s1.value = "";
+        if (s2) s2.value = "";
+        loadTramitesData();
+      }
+
+      function populateStateDropdown(dropdownId, estados, selectedState) {
+        const select = document.getElementById(dropdownId);
+        if (!select) return;
+        const currentVal = select.value;
+        select.innerHTML = '';
+        
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = "";
+        defaultOpt.textContent = dropdownId.endsWith('1') ? "-- Top 1 (Auto) --" : "-- Top 2 (Auto) --";
+        select.appendChild(defaultOpt);
+
+        const noneOpt = document.createElement('option');
+        noneOpt.value = "NONE";
+        noneOpt.textContent = "-- Desactivar --";
+        select.appendChild(noneOpt);
+
+        estados.forEach(st => {
+          const opt = document.createElement('option');
+          opt.value = st;
+          opt.textContent = st;
+          select.appendChild(opt);
+        });
+
+        if (currentVal && (estados.includes(currentVal) || currentVal === "NONE")) {
+          select.value = currentVal;
+        } else if (selectedState && (estados.includes(selectedState) || selectedState === "NONE")) {
+          select.value = selectedState;
+        }
+      }
+
       async function loadTramitesData() {
         const select = document.getElementById('select-tramite');
         const selectedTramite = select.value;
         if (!selectedTramite) return;
         
+        const selState1 = document.getElementById('select-tramite-estado1').value;
+        const selState2 = document.getElementById('select-tramite-estado2').value;
+
+        let url = `/indicadores/tramites/data/?tramite=${encodeURIComponent(selectedTramite)}`;
+        if (selState1) url += `&estado1=${encodeURIComponent(selState1)}`;
+        if (selState2) url += `&estado2=${encodeURIComponent(selState2)}`;
+
         try {
-          const response = await fetch(`/indicadores/tramites/data/?tramite=${encodeURIComponent(selectedTramite)}`);
+          const response = await fetch(url);
           const data = await response.json();
           if (data.status === 'success') {
+            if (data.estados && data.estados.length > 0) {
+              populateStateDropdown('select-tramite-estado1', data.estados, data.selected_state1);
+              populateStateDropdown('select-tramite-estado2', data.estados, data.selected_state2);
+            }
+
             const cleanTitle = selectedTramite.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
             document.getElementById('banner-recibidos').textContent = cleanTitle;
             document.getElementById('banner-concluidos').textContent = cleanTitle;
@@ -2005,51 +2459,184 @@
           tramiteCharts[metricKey].destroy();
         }
         
+        const tramiteLabelsPlugin = {
+          id: 'tramiteLabelsPlugin',
+          afterDatasetsDraw(chart) {
+            if (window.ChartDataLabels && chart.options.plugins && chart.options.plugins.datalabels && chart.options.plugins.datalabels.display !== false) {
+              return;
+            }
+            const { ctx } = chart;
+            ctx.save();
+            ctx.font = 'bold 10px "DM Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            chart.data.datasets.forEach((dataset, dsIdx) => {
+              const meta = chart.getDatasetMeta(dsIdx);
+              if (!meta || meta.hidden || !meta.data) return;
+
+              ctx.fillStyle = dataset.borderColor || '#333';
+              meta.data.forEach((point, index) => {
+                const val = dataset.data[index];
+                if (val !== undefined && val !== null) {
+                  ctx.fillText(val.toLocaleString(), point.x, point.y - 5);
+                }
+              });
+            });
+            ctx.restore();
+          }
+        };
+
+        const datasets = [];
+
+        if (metricData.nacional) {
+          datasets.push({
+            label: 'Nacional',
+            data: metricData.nacional.values,
+            borderColor: '#b66666', // Red
+            backgroundColor: '#b66666',
+            borderWidth: 3,
+            pointStyle: 'rect', // Square
+            pointRadius: 6,
+            tension: 0.1,
+            fill: false,
+            datalabels: {
+              display: true,
+              align: 'top',
+              anchor: 'end',
+              offset: 4,
+              color: '#b66666',
+              font: { family: 'DM Sans', size: 10, weight: 'bold' },
+              formatter: function(value) {
+                return value !== null && value !== undefined ? value.toLocaleString() : value;
+              }
+            }
+          });
+        }
+
+        if (metricData.state1) {
+          datasets.push({
+            label: metricData.state1.name,
+            data: metricData.state1.values,
+            borderColor: '#104e3b', // Green
+            backgroundColor: '#104e3b',
+            borderWidth: 2,
+            pointStyle: 'rect', // Square
+            pointRadius: 5,
+            tension: 0.1,
+            fill: false,
+            datalabels: {
+              display: true,
+              align: 'top',
+              anchor: 'end',
+              offset: 4,
+              color: '#104e3b',
+              font: { family: 'DM Sans', size: 10, weight: 'bold' },
+              formatter: function(value) {
+                return value !== null && value !== undefined ? value.toLocaleString() : value;
+              }
+            }
+          });
+        }
+
+        if (metricData.state2) {
+          datasets.push({
+            label: metricData.state2.name,
+            data: metricData.state2.values,
+            borderColor: '#bdb58d', // Yellow/Gold
+            backgroundColor: '#bdb58d',
+            borderWidth: 2,
+            pointStyle: 'rect', // Square
+            pointRadius: 5,
+            tension: 0.1,
+            fill: false,
+            datalabels: {
+              display: true,
+              align: 'top',
+              anchor: 'end',
+              offset: 4,
+              color: '#8a7c5a',
+              font: { family: 'DM Sans', size: 10, weight: 'bold' },
+              formatter: function(value) {
+                return value !== null && value !== undefined ? value.toLocaleString() : value;
+              }
+            }
+          });
+        }
+
+        const isSingleState = (metricData.state1 && !metricData.state2) || (!metricData.state1 && metricData.state2);
+        const singleStateObj = metricData.state1 || metricData.state2;
+
+        if (isSingleState && singleStateObj && singleStateObj.stats) {
+          const stats = singleStateObj.stats;
+          const labelsCount = metricData.labels.length;
+
+          // Promedio (Mean) line - Blue dashed
+          if (stats.mean !== undefined && stats.mean !== null) {
+            datasets.push({
+              label: `Promedio (${singleStateObj.name}): ${stats.mean}`,
+              data: Array(labelsCount).fill(stats.mean),
+              borderColor: '#2563eb', // Blue
+              backgroundColor: '#2563eb',
+              borderWidth: 2,
+              borderDash: [6, 4],
+              pointRadius: 0,
+              fill: false,
+              datalabels: { display: false }
+            });
+          }
+
+          // Moda (Mode) line - Purple dashed (if present)
+          if (stats.mode !== undefined && stats.mode !== null) {
+            datasets.push({
+              label: `Moda (${singleStateObj.name}): ${stats.mode}`,
+              data: Array(labelsCount).fill(stats.mode),
+              borderColor: '#9333ea', // Purple
+              backgroundColor: '#9333ea',
+              borderWidth: 2,
+              borderDash: [4, 4],
+              pointRadius: 0,
+              fill: false,
+              datalabels: { display: false }
+            });
+          }
+
+          // Desviación Estándar line - Orange dashed
+          if (stats.std_dev !== undefined && stats.std_dev !== null) {
+            datasets.push({
+              label: `Desv. Est. (${singleStateObj.name}): ±${stats.std_dev}`,
+              data: Array(labelsCount).fill(stats.std_dev),
+              borderColor: '#ea580c', // Orange
+              backgroundColor: '#ea580c',
+              borderWidth: 2,
+              borderDash: [2, 4],
+              pointRadius: 0,
+              fill: false,
+              datalabels: { display: false }
+            });
+          }
+        }
+
         tramiteCharts[metricKey] = new Chart(ctx, {
           type: 'line',
+          plugins: [tramiteLabelsPlugin],
           data: {
             labels: metricData.labels,
-            datasets: [
-              {
-                label: 'Nacional',
-                data: metricData.nacional.values,
-                borderColor: '#b66666', // Red
-                backgroundColor: '#b66666',
-                borderWidth: 3,
-                pointStyle: 'rect', // Square
-                pointRadius: 6,
-                tension: 0.1,
-                fill: false
-              },
-              {
-                label: metricData.state1.name,
-                data: metricData.state1.values,
-                borderColor: '#104e3b', // Green
-                backgroundColor: '#104e3b',
-                borderWidth: 2,
-                pointStyle: 'rect', // Square
-                pointRadius: 5,
-                tension: 0.1,
-                fill: false
-              },
-              {
-                label: metricData.state2.name,
-                data: metricData.state2.values,
-                borderColor: '#bdb58d', // Yellow/Gold
-                backgroundColor: '#bdb58d',
-                borderWidth: 2,
-                pointStyle: 'rect', // Square
-                pointRadius: 5,
-                tension: 0.1,
-                fill: false
-              }
-            ]
+            datasets: datasets
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 24
+              }
+            },
             plugins: {
-              legend: { display: false }
+              legend: { display: false },
+              datalabels: {
+                display: true
+              }
             },
             scales: {
               y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
@@ -2061,40 +2648,100 @@
 
       function renderTramiteLegend(legendId, metricData) {
         const container = document.getElementById(legendId);
-        container.innerHTML = `
-          <div class="tramite-legend-item">
-            <div class="tramite-legend-label">
-              <span class="legend-box red"></span>
-              Nacional
+        let html = '';
+
+        if (metricData.nacional) {
+          html += `
+            <div class="tramite-legend-item">
+              <div class="tramite-legend-label">
+                <span class="legend-box red"></span>
+                Nacional
+              </div>
+              <div class="tramite-legend-subtext" style="color: #b66666;">
+                <strong>${metricData.nacional.top_nationality.count} ${metricData.nacional.top_nationality.name}:</strong>
+                ${metricData.nacional.top_nationality.pct}%
+              </div>
             </div>
-            <div class="tramite-legend-subtext" style="color: #b66666;">
-              <strong>${metricData.nacional.top_nationality.count} ${metricData.nacional.top_nationality.name}:</strong>
-              ${metricData.nacional.top_nationality.pct}%
+          `;
+        }
+
+        if (metricData.state1) {
+          html += `
+            <div class="tramite-legend-item">
+              <div class="tramite-legend-label">
+                <span class="legend-box green"></span>
+                ${metricData.state1.name}
+              </div>
+              <div class="tramite-legend-subtext" style="color: #104e3b;">
+                <strong>${metricData.state1.top_nationality.count} ${metricData.state1.top_nationality.name}:</strong>
+                ${metricData.state1.top_nationality.pct}%
+              </div>
             </div>
-          </div>
-          
-          <div class="tramite-legend-item">
-            <div class="tramite-legend-label">
-              <span class="legend-box green"></span>
-              ${metricData.state1.name}
+          `;
+        }
+
+        if (metricData.state2) {
+          html += `
+            <div class="tramite-legend-item">
+              <div class="tramite-legend-label">
+                <span class="legend-box yellow"></span>
+                ${metricData.state2.name}
+              </div>
+              <div class="tramite-legend-subtext" style="color: #8a7c5a;">
+                <strong>${metricData.state2.top_nationality.count} ${metricData.state2.top_nationality.name}:</strong>
+                ${metricData.state2.top_nationality.pct}%
+              </div>
             </div>
-            <div class="tramite-legend-subtext" style="color: #104e3b;">
-              <strong>${metricData.state1.top_nationality.count} ${metricData.state1.top_nationality.name}:</strong>
-              ${metricData.state1.top_nationality.pct}%
+          `;
+        }
+
+        const isSingleState = (metricData.state1 && !metricData.state2) || (!metricData.state1 && metricData.state2);
+        const singleStateObj = metricData.state1 || metricData.state2;
+
+        if (isSingleState && singleStateObj && singleStateObj.stats) {
+          const stats = singleStateObj.stats;
+          html += `
+            <div class="tramite-legend-item" style="border-left: 1px dashed #ccc; padding-left: 8px;">
+              <div class="tramite-legend-label" style="color: #2563eb;">
+                <span class="legend-box" style="background: #2563eb; height: 3px; border-radius: 0;"></span>
+                Promedio
+              </div>
+              <div class="tramite-legend-subtext" style="color: #2563eb;">
+                <strong>${stats.mean}</strong>
+              </div>
             </div>
-          </div>
-          
-          <div class="tramite-legend-item">
-            <div class="tramite-legend-label">
-              <span class="legend-box yellow"></span>
-              ${metricData.state2.name}
-            </div>
-            <div class="tramite-legend-subtext" style="color: #8a7c5a;">
-              <strong>${metricData.state2.top_nationality.count} ${metricData.state2.top_nationality.name}:</strong>
-              ${metricData.state2.top_nationality.pct}%
-            </div>
-          </div>
-        `;
+          `;
+
+          if (stats.mode !== undefined && stats.mode !== null) {
+            html += `
+              <div class="tramite-legend-item">
+                <div class="tramite-legend-label" style="color: #9333ea;">
+                  <span class="legend-box" style="background: #9333ea; height: 3px; border-radius: 0;"></span>
+                  Moda
+                </div>
+                <div class="tramite-legend-subtext" style="color: #9333ea;">
+                  <strong>${stats.mode}</strong>
+                </div>
+              </div>
+            `;
+          }
+
+          if (stats.std_dev !== undefined && stats.std_dev !== null) {
+            html += `
+              <div class="tramite-legend-item">
+                <div class="tramite-legend-label" style="color: #ea580c;">
+                  <span class="legend-box" style="background: #ea580c; height: 3px; border-radius: 0;"></span>
+                  Desv. Est.
+                </div>
+                <div class="tramite-legend-subtext" style="color: #ea580c;">
+                  <strong>±${stats.std_dev}</strong>
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        container.innerHTML = html;
       }
 
       function renderFloatingTrends(trendsId, metricData) {
@@ -2106,11 +2753,13 @@
             return `<div class="trend-pill-right down">${val}%</div>`;
           }
         };
-        container.innerHTML = `
-          ${getTrendPill(metricData.nacional.pct_change)}
-          ${getTrendPill(metricData.state1.pct_change)}
-          ${getTrendPill(metricData.state2.pct_change)}
-        `;
+
+        let html = '';
+        if (metricData.nacional) html += getTrendPill(metricData.nacional.pct_change);
+        if (metricData.state1) html += getTrendPill(metricData.state1.pct_change);
+        if (metricData.state2) html += getTrendPill(metricData.state2.pct_change);
+
+        container.innerHTML = html;
       }
 
       function updateClock() {

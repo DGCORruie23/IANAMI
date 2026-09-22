@@ -121,6 +121,14 @@ def parse_date(date_str):
     date_str = str(date_str).strip()
     if ' ' in date_str:
         date_str = date_str.split(' ')[0]
+    # Check if value is Excel serial number (numeric digit string)
+    if date_str.isdigit():
+        try:
+            val_num = int(date_str)
+            if val_num > 1000:
+                return pd.to_datetime(val_num, unit='D', origin='1899-12-30').date()
+        except Exception:
+            pass
     try:
         # Prioritize pandas, which resolves 9/11/24 as 2024-09-11 (month-first) by default
         return pd.to_datetime(date_str, dayfirst=False).date()

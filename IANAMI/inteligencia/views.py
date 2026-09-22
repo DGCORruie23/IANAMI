@@ -549,14 +549,41 @@ def tramites_data_view(request):
         .order_by('-total')[:2]
     )
     
-    state1 = top_states_qs[0]['estado__nombre'] if len(top_states_qs) >= 1 else "S/D"
-    state2 = top_states_qs[1]['estado__nombre'] if len(top_states_qs) >= 2 else "S/D"
+    default_state1 = top_states_qs[0]['estado__nombre'] if len(top_states_qs) >= 1 else "S/D"
+    default_state2 = top_states_qs[1]['estado__nombre'] if len(top_states_qs) >= 2 else "S/D"
+
+    req_state1 = request.GET.get('estado1')
+    req_state2 = request.GET.get('estado2')
+
+    if req_state1 == "NONE":
+        state1 = None
+    elif req_state1 and req_state1.strip():
+        state1 = req_state1.strip().upper()
+    else:
+        state1 = default_state1
+
+    if req_state2 == "NONE":
+        state2 = None
+    elif req_state2 and req_state2.strip():
+        state2 = req_state2.strip().upper()
+    else:
+        state2 = default_state2
+
+    # Get list of all distinct states for dropdowns
+    all_states_qs = (
+        TramitesMigratorios.objects
+        .filter(tramite=selected_tramite)
+        .values_list('estado__nombre', flat=True)
+        .distinct()
+        .order_by('estado__nombre')
+    )
+    estados_list = [e.title() for e in all_states_qs if e]
     
     def get_metric_data(metric_field):
         labels = []
         nac_values = []
-        state1_values = []
-        state2_values = []
+        state1_values = [] if state1 else None
+        state2_values = [] if state2 else None
         
         for start_date, end_date in weeks:
             label = f"{start_date.day}/{start_date.month}/{start_date.year}"
@@ -567,11 +594,13 @@ def tramites_data_view(request):
             total_nac = qs_week.aggregate(total=Sum(metric_field))['total'] or 0
             nac_values.append(total_nac)
             
-            total_s1 = qs_week.filter(estado__nombre=state1).aggregate(total=Sum(metric_field))['total'] or 0
-            state1_values.append(total_s1)
+            if state1:
+                total_s1 = qs_week.filter(estado__nombre=state1).aggregate(total=Sum(metric_field))['total'] or 0
+                state1_values.append(total_s1)
             
-            total_s2 = qs_week.filter(estado__nombre=state2).aggregate(total=Sum(metric_field))['total'] or 0
-            state2_values.append(total_s2)
+            if state2:
+                total_s2 = qs_week.filter(estado__nombre=state2).aggregate(total=Sum(metric_field))['total'] or 0
+                state2_values.append(total_s2)
             
         # Calculate percentage change for the last week vs previous week
         pct_change_nac = 0.0
@@ -579,11 +608,11 @@ def tramites_data_view(request):
             pct_change_nac = ((nac_values[-1] - nac_values[-2]) / nac_values[-2]) * 100.0
             
         pct_change_s1 = 0.0
-        if len(state1_values) >= 2 and state1_values[-2] > 0:
+        if state1 and len(state1_values) >= 2 and state1_values[-2] > 0:
             pct_change_s1 = ((state1_values[-1] - state1_values[-2]) / state1_values[-2]) * 100.0
             
         pct_change_s2 = 0.0
-        if len(state2_values) >= 2 and state2_values[-2] > 0:
+        if state2 and len(state2_values) >= 2 and state2_values[-2] > 0:
             pct_change_s2 = ((state2_values[-1] - state2_values[-2]) / state2_values[-2]) * 100.0
             
         # Top nationality analysis in the last week
@@ -621,33 +650,68 @@ def tramites_data_view(request):
             return {"name": "S/D", "count": 0, "pct": 0}
             
         top_nac_national = get_top_nac_info(qs_last, nac_values[-1])
-        top_nac_s1 = get_top_nac_info(qs_last.filter(estado__nombre=state1), state1_values[-1])
-        top_nac_s2 = get_top_nac_info(qs_last.filter(estado__nombre=state2), state2_values[-1])
         
-        return {
+        res = {
             "labels": labels,
             "nacional": {
                 "values": nac_values,
                 "pct_change": round(pct_change_nac, 1),
                 "top_nationality": top_nac_national
-            },
-            "state1": {
+            }
+        }
+
+        if state1:
+            top_nac_s1 = get_top_nac_info(qs_last.filter(estado__nombre=state1), state1_values[-1])
+            import statistics
+            s1_mean = round(statistics.mean(state1_values), 1) if state1_values else 0
+            try:
+                s1_mode = round(statistics.mode(state1_values), 1) if state1_values else 0
+            except statistics.StatisticsError:
+                s1_mode = None
+            s1_std = round(statistics.stdev(state1_values), 1) if len(state1_values) > 1 else 0
+
+            res["state1"] = {
                 "name": state1.title(),
                 "values": state1_values,
                 "pct_change": round(pct_change_s1, 1),
-                "top_nationality": top_nac_s1
-            },
-            "state2": {
+                "top_nationality": top_nac_s1,
+                "stats": {
+                    "mean": s1_mean,
+                    "mode": s1_mode,
+                    "std_dev": s1_std
+                }
+            }
+
+        if state2:
+            top_nac_s2 = get_top_nac_info(qs_last.filter(estado__nombre=state2), state2_values[-1])
+            import statistics
+            s2_mean = round(statistics.mean(state2_values), 1) if state2_values else 0
+            try:
+                s2_mode = round(statistics.mode(state2_values), 1) if state2_values else 0
+            except statistics.StatisticsError:
+                s2_mode = None
+            s2_std = round(statistics.stdev(state2_values), 1) if len(state2_values) > 1 else 0
+
+            res["state2"] = {
                 "name": state2.title(),
                 "values": state2_values,
                 "pct_change": round(pct_change_s2, 1),
-                "top_nationality": top_nac_s2
+                "top_nationality": top_nac_s2,
+                "stats": {
+                    "mean": s2_mean,
+                    "mode": s2_mode,
+                    "std_dev": s2_std
+                }
             }
-        }
+
+        return res
         
     data = {
         "status": "success",
         "tramite": tramite_param,
+        "selected_state1": state1.title() if state1 else "NONE",
+        "selected_state2": state2.title() if state2 else "NONE",
+        "estados": estados_list,
         "recibidos": get_metric_data("recibidos"),
         "concluidos": get_metric_data("concluidos"),
         "resueltos": get_metric_data("resueltos"),
