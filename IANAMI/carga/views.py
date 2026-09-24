@@ -553,9 +553,14 @@ def upload_view(request):
                 return JsonResponse({"status": "error", "message": f"JSON inválido: {str(e)}"}, status=400)
             model_type = data.get("model_type")
             rows = data.get("rows", [])
+            clear_existing = data.get("clear_existing", True)
+            if isinstance(clear_existing, str):
+                clear_existing = clear_existing.lower() in ('true', '1', 'on', 'yes')
         else:
             csv_file = request.FILES.get("file")
             model_type = request.POST.get("model_type")
+            clear_existing_val = request.POST.get("clear_existing", "true")
+            clear_existing = str(clear_existing_val).lower() in ('true', '1', 'on', 'yes')
             
             if not csv_file or not model_type:
                 return JsonResponse({"status": "error", "message": "Archivo o tipo de modelo faltante."}, status=400)
@@ -631,7 +636,7 @@ def upload_view(request):
             return JsonResponse({"status": "error", "message": "Tipo de modelo no reconocido."}, status=400)
             
         try:
-            # If this is the first chunk of the upload session, clear existing data for this model
+            # If this is the first chunk of the upload session and clear_existing is True, clear existing data for this model
             is_first_chunk = False
             if is_json:
                 chunk_index = data.get("chunk_index", 0)
@@ -640,7 +645,7 @@ def upload_view(request):
             else:
                 is_first_chunk = True
 
-            if is_first_chunk:
+            if is_first_chunk and clear_existing:
                 model_class.objects.all().delete()
 
             for idx, row in enumerate(items_iterator):

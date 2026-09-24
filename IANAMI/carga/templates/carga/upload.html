@@ -261,6 +261,89 @@
             border: 1px solid var(--rojo);
             color: var(--rojo);
         }
+
+        .checkbox-group {
+            margin-bottom: 20px;
+            background: var(--fondo);
+            border: 1px solid var(--borde);
+            border-radius: 6px;
+            padding: 12px 14px;
+            transition: border-color 0.2s;
+        }
+
+        .checkbox-group:hover {
+            border-color: var(--verde);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            gap: 12px;
+            user-select: none;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkbox-custom {
+            position: relative;
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            background-color: var(--blanco);
+            border: 2px solid var(--borde);
+            border-radius: 4px;
+            margin-top: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-container input[type="checkbox"]:checked ~ .checkbox-custom {
+            background-color: var(--rojo);
+            border-color: var(--rojo);
+        }
+
+        .checkbox-custom::after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 5px;
+            top: 1px;
+            width: 4px;
+            height: 9px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .checkbox-container input[type="checkbox"]:checked ~ .checkbox-custom::after {
+            display: block;
+        }
+
+        .checkbox-label-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .checkbox-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--texto);
+            margin-bottom: 2px;
+        }
+
+        .checkbox-desc {
+            font-size: 11px;
+            color: var(--gris-oscuro);
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -311,6 +394,17 @@
                     <input type="file" name="file" id="file" class="file-input" accept=".csv, .xlsx, .xls" required>
                 </div>
                 <div class="selected-file" id="selected-file"></div>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label class="checkbox-container" for="clear_existing">
+                    <input type="checkbox" id="clear_existing" name="clear_existing" checked>
+                    <span class="checkbox-custom"></span>
+                    <div class="checkbox-label-content">
+                        <span class="checkbox-title">Reemplazar registros existentes</span>
+                        <span class="checkbox-desc">Si está marcado, se borrarán todos los datos anteriores de este modelo antes de cargar el nuevo archivo. Desmárquelo si desea acumular / anexar la información.</span>
+                    </div>
+                </label>
             </div>
 
             <button type="submit" class="btn-upload" id="submit-btn">Comenzar Carga</button>
@@ -379,6 +473,7 @@
 
         const file = fileInput.files[0];
         const modelType = document.getElementById('model_type').value;
+        const clearExisting = document.getElementById('clear_existing').checked;
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
         if (!file) {
@@ -490,6 +585,7 @@
                         body: JSON.stringify({
                             model_type: modelType,
                             chunk_index: i,
+                            clear_existing: clearExisting,
                             rows: chunk
                         })
                     });
@@ -524,7 +620,8 @@
                 progressBar.style.width = '100%';
                 progressPct.textContent = '100%';
                 progressText.textContent = '¡Carga completada con éxito!';
-                successAlert.textContent = `¡Carga exitosa! Se procesaron ${rows.length} filas totales en ${totalChunks} fragmento(s).`;
+                const modeText = clearExisting ? 'reemplazando registros previos' : 'anexando a registros existentes';
+                successAlert.textContent = `¡Carga exitosa! Se procesaron ${rows.length} filas totales en ${totalChunks} fragmento(s) (${modeText}).`;
                 successAlert.style.display = 'block';
 
             } catch (err) {
