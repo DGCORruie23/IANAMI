@@ -11,6 +11,7 @@ from carga.models import (
     Encuentro, CondicionEstancia, MotivoEstancia, Caravana, ActasCivil, TramitesMigratorios,
     InternacionN, MexRepatriados, RepatriadosComerciales
 )
+from usuario.permissions import get_user_role_info, admin_or_superuser_required
 
 def format_month(dt):
     if not dt:
@@ -18,6 +19,7 @@ def format_month(dt):
     return dt.strftime("%Y-%m")
 
 @login_required
+@admin_or_superuser_required
 def inteligencia_view(request):
     db_data = {}
 
@@ -257,7 +259,10 @@ def inteligencia_view(request):
 
 @login_required
 def indicadores_view(request):
-    return render(request, 'inteligencia/indicadores.html')
+    role_info = get_user_role_info(request.user)
+    return render(request, 'inteligencia/indicadores.html', {
+        'user_role': role_info,
+    })
 
 from carga.models import (
     Rescatado, Presentado, CanalizadoAdulto, CanalizadoNNA, Retornado,
@@ -267,6 +272,7 @@ from carga.models import (
 )
 
 @login_required
+@admin_or_superuser_required
 def comparativo_view(request):
     return render(request, 'inteligencia/comparativo.html')
 

@@ -799,8 +799,17 @@
         </div>
         <div class="header-sub">INDICADORES · V3.0</div>
       </div>
-      <div class="nav-links">
-        <a href="{% url 'inteligencia' %}">← Dashboard Principal</a>
+      <div class="nav-links" style="display: flex; align-items: center; gap: 14px;">
+        <span style="font-size: 11px; color: var(--arena); font-weight: 600;">
+          {{ request.user.username }} ({{ user_role.tipo_nombre }}{% if user_role.area_abrev %} · {{ user_role.area_abrev }}{% endif %})
+        </span>
+        {% if user_role.can_access_dashboard %}
+        <a href="{% url 'inteligencia' %}" style="color: var(--crema); text-decoration: none; font-size: 11px; font-weight: 600; text-transform: uppercase;">← Dashboard Principal</a>
+        {% endif %}
+        {% if user_role.can_upload %}
+        <a href="{% url 'upload_csv' %}" style="color: var(--arena); text-decoration: none; font-size: 11px; font-weight: 600; text-transform: uppercase;">Carga de Datos →</a>
+        {% endif %}
+        <a href="{% url 'logout' %}" style="color: var(--rojo); text-decoration: none; font-size: 11px; font-weight: 600; text-transform: uppercase;">Salir</a>
       </div>
       <div class="header-status">
         <div class="status-dot"></div>
@@ -811,15 +820,21 @@
     </header>
 
     <nav class="nav">
-      <button class="nav-btn active" onclick="showSubsection('regulacion')">
-        Regulación
+      {% if user_role.can_view_all_sections or 'regulacion' in user_role.allowed_sections %}
+      <button class="nav-btn {% if user_role.can_view_all_sections or 'regulacion' in user_role.allowed_sections %}active{% endif %}" onclick="showSubsection('regulacion')">
+        Regulación (DGRAM)
       </button>
-      <button class="nav-btn" onclick="showSubsection('control')">
-        Control
+      {% endif %}
+      {% if user_role.can_view_all_sections or 'control' in user_role.allowed_sections %}
+      <button class="nav-btn {% if not user_role.can_view_all_sections and 'control' in user_role.allowed_sections and not 'regulacion' in user_role.allowed_sections %}active{% endif %}" onclick="showSubsection('control')">
+        Control (DGCVM)
       </button>
-      <button class="nav-btn" onclick="showSubsection('proteccion')">
-        Protección
+      {% endif %}
+      {% if user_role.can_view_all_sections or 'proteccion' in user_role.allowed_sections %}
+      <button class="nav-btn {% if not user_role.can_view_all_sections and 'proteccion' in user_role.allowed_sections and not 'regulacion' in user_role.allowed_sections and not 'control' in user_role.allowed_sections %}active{% endif %}" onclick="showSubsection('proteccion')">
+        Protección (DGPMV)
       </button>
+      {% endif %}
     </nav>
 
     <main class="main">
@@ -827,7 +842,8 @@
       <div id="sec-indicadores">
         
         <!-- SUBSECTION: REGULACIÓN -->
-        <section class="section active" id="sub-regulacion">
+        {% if user_role.can_view_all_sections or 'regulacion' in user_role.allowed_sections %}
+        <section class="section {% if user_role.can_view_all_sections or 'regulacion' in user_role.allowed_sections %}active{% endif %}" id="sub-regulacion">
           <div class="section-header">
             <h2>Regulación y Archivo Migratorio</h2>
             <span class="section-badge">Diagnósticos de Validación y Operación de Trámites</span>
@@ -1035,9 +1051,11 @@
             </div>
           </div>
         </section>
+        {% endif %}
 
         <!-- SUBSECTION: CONTROL -->
-        <section class="section" id="sub-control">
+        {% if user_role.can_view_all_sections or 'control' in user_role.allowed_sections %}
+        <section class="section {% if not user_role.can_view_all_sections and 'control' in user_role.allowed_sections and not 'regulacion' in user_role.allowed_sections %}active{% endif %}" id="sub-control">
           <div class="section-header">
             <h2>Control y Verificación Migratoria</h2>
             <span class="section-badge">Diagnósticos de Validación y Operación de Control</span>
@@ -1164,9 +1182,11 @@
             </div>
           </div>
         </section>
+        {% endif %}
 
         <!-- SUBSECTION: PROTECCIÓN -->
-        <section class="section" id="sub-proteccion">
+        {% if user_role.can_view_all_sections or 'proteccion' in user_role.allowed_sections %}
+        <section class="section {% if not user_role.can_view_all_sections and 'proteccion' in user_role.allowed_sections and not 'regulacion' in user_role.allowed_sections and not 'control' in user_role.allowed_sections %}active{% endif %}" id="sub-proteccion">
           <div class="section-header">
             <h2>Protección Al Migrante</h2>
             <span class="section-badge">Repatriación Aérea · Vuelos PRIM · Monitoreo Semanal</span>
@@ -1301,6 +1321,7 @@
             </div>
           </div>
         </section>
+        {% endif %}
 
       </div>
     </main>
@@ -3685,9 +3706,18 @@
       setInterval(updateClock, 1000);
       updateClock();
 
-      // Trigger Regulation data fetch on first load since it's active
+      // Trigger data fetch on first load depending on active section
       document.addEventListener('DOMContentLoaded', () => {
-        loadRegulacionData();
+        const activeSection = document.querySelector('.section.active');
+        if (activeSection) {
+          if (activeSection.id === 'sub-control') {
+            loadControlData();
+          } else if (activeSection.id === 'sub-proteccion') {
+            loadProteccionData();
+          } else {
+            loadRegulacionData();
+          }
+        }
       });
     </script>
   </body>

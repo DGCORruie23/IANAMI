@@ -350,40 +350,63 @@
 
 <header class="header">
     <div class="header-logo">Ecosistema de Inteligencia Migratoria <span>·</span> IA-NAMI</div>
-    <a href="/inteligencia/" class="nav-link">Ver Dashboard</a>
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 11px; color: var(--arena); font-weight: 600;">
+            {{ request.user.username }} ({{ user_role.tipo_nombre }}{% if user_role.area_abrev %} · {{ user_role.area_abrev }}{% endif %})
+        </span>
+        {% if user_role.can_access_dashboard %}
+        <a href="{% url 'inteligencia' %}" class="nav-link">Ver Dashboard</a>
+        {% endif %}
+        <a href="{% url 'indicadores' %}" class="nav-link">Ver Indicadores</a>
+        <a href="{% url 'logout' %}" class="nav-link" style="border-color: var(--rojo); color: var(--rojo);">Salir</a>
+    </div>
 </header>
 
 <div class="container">
     <div class="upload-card">
         <h1 class="title">Carga de Datos Históricos</h1>
-        <p class="subtitle">Seleccione el tipo de archivo e importe registros de forma masiva (procesados por lotes de 3,000 en 3,000).</p>
+        <p class="subtitle">
+            {% if user_role.is_editor %}
+            Módulo de carga para <strong>{{ user_role.area_nombre }} ({{ user_role.area_abrev }})</strong>.
+            {% else %}
+            Seleccione el tipo de archivo e importe registros de forma masiva (procesados por lotes de 3,000 en 3,000).
+            {% endif %}
+        </p>
 
         <form id="upload-form" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
                 <label for="model_type" class="form-label">Tipo de Estructura / Modelo</label>
                 <select name="model_type" id="model_type" class="form-select" required>
-                    <option value="nacionalidades">Catálogo de Nacionalidades (Excel: Nacionalidades-Paises.xlsx)</option>
-                    <option value="rescatados">Rescatados (Rescatados.csv)</option>
-                    <option value="presentados">Presentados (Presentados.csv)</option>
-                    <option value="canalizados_adultos">Canalizados Adultos (Canalizados_Adultos.csv)</option>
-                    <option value="canalizados_nna">Canalizados NNA (Canalizados_NNA.csv)</option>
-                    <option value="internaciones">Internaciones (Internaciones.csv)</option>
-                    <option value="inadmisiones">Inadmisiones (Inadmisiones.csv)</option>
-                    <option value="condicion_estancia">Condición de Estancia (Condicion_de_Estancia.csv)</option>
-                    <option value="motivo_estancia">Motivo de Estancia (Motivo_de_Estancia.csv)</option>
-                    <option value="encuentros">Encuentros CBP/USBP (Encuentros.csv)</option>
-                    <option value="extranjeros_recibidos">Extranjeros Recibidos (Extranjeros_recibidos.csv)</option>
-                    <option value="mexicanos_recibidos">Mexicanos Recibidos (Mexicanos_Recibidos.csv)</option>
-                    <option value="retornados">Retornados (Retornados.csv)</option>
-                    <option value="traslados">Traslados (Traslados.csv)</option>
-                    <option value="caravanas">Caravanas (Caravanas_2019_2026.csv)</option>
-                    <option value="actas_civil">Actas de Registro Civil (DIAGNOSTICO Actas Civil.xlsx)</option>
-                    <option value="tramites_migratorios">Trámites Migratorios (Trámites Migratorios Indicadores.xlsx)</option>
-                    <option value="inadmisiones2da">Inadmisiones 2da Revisión (Segunda REVISION OCT 2024 AL __.xlsx)</option>
-                    <option value="internaciones_n">Internaciones N (Ingresos OCT 2024__.xlsx)</option>
-                    <option value="mex_repatriados">Mexicanos Repatriados por Punto (puntos repatriacion.xlsx)</option>
-                    <option value="repatriados_comerciales">Repatriados Vuelos Comerciales (MAPA REPATRIADOS comerciales.xlsx)</option>
+                    {% if user_role.is_admin %}
+                    <option value="nacionalidades" data-area="TODAS">Catálogo de Nacionalidades (Excel: Nacionalidades-Paises.xlsx)</option>
+                    <option value="rescatados" data-area="DGCVM">Rescatados (DGCVM) (Rescatados.csv)</option>
+                    <option value="presentados" data-area="DGCVM">Presentados (DGCVM) (Presentados.csv)</option>
+                    <option value="canalizados_adultos" data-area="DGCVM">Canalizados Adultos (DGCVM) (Canalizados_Adultos.csv)</option>
+                    <option value="canalizados_nna" data-area="DGCVM">Canalizados NNA (DGCVM) (Canalizados_NNA.csv)</option>
+                    <option value="internaciones" data-area="DGCVM">Internaciones (DGCVM) (Internaciones.csv)</option>
+                    <option value="inadmisiones" data-area="DGCVM">Inadmisiones (DGCVM) (Inadmisiones.csv)</option>
+                    <option value="encuentros" data-area="DGCVM">Encuentros CBP/USBP (DGCVM) (Encuentros.csv)</option>
+                    <option value="extranjeros_recibidos" data-area="DGCVM">Extranjeros Recibidos (DGCVM) (Extranjeros_recibidos.csv)</option>
+                    <option value="retornados" data-area="DGCVM">Retornados (DGCVM) (Retornados.csv)</option>
+                    <option value="traslados" data-area="DGCVM">Traslados (DGCVM) (Traslados.csv)</option>
+                    <option value="caravanas" data-area="DGCVM">Caravanas (DGCVM) (Caravanas_2019_2026.csv)</option>
+                    <option value="condicion_estancia" data-area="DGRAM">Condición de Estancia (DGRAM) (Condicion_de_Estancia.csv)</option>
+                    <option value="motivo_estancia" data-area="DGRAM">Motivo de Estancia (DGRAM) (Motivo_de_Estancia.csv)</option>
+                    <option value="mexicanos_recibidos" data-area="DGPMV">Mexicanos Recibidos (DGPMV) (Mexicanos_Recibidos.csv)</option>
+                    {% endif %}
+                    {% if user_role.is_admin or user_role.area_abrev == "DGCVM" %}
+                    <option value="inadmisiones2da" data-area="DGCVM">Inadmisiones 2da Revisión (DGCVM) (Segunda REVISION OCT 2024 AL __.xlsx)</option>
+                    <option value="internaciones_n" data-area="DGCVM">Internaciones N (DGCVM) (Ingresos OCT 2024__.xlsx)</option>
+                    {% endif %}
+                    {% if user_role.is_admin or user_role.area_abrev == "DGRAM" %}
+                    <option value="actas_civil" data-area="DGRAM">Actas de Registro Civil (DGRAM) (DIAGNOSTICO Actas Civil.xlsx)</option>
+                    <option value="tramites_migratorios" data-area="DGRAM">Trámites Migratorios (DGRAM) (Trámites Migratorios Indicadores.xlsx)</option>
+                    {% endif %}
+                    {% if user_role.is_admin or user_role.area_abrev == "DGPMV" %}
+                    <option value="mex_repatriados" data-area="DGPMV">Mexicanos Repatriados por Punto (DGPMV) (puntos repatriacion.xlsx)</option>
+                    <option value="repatriados_comerciales" data-area="DGPMV">Repatriados Vuelos Comerciales (DGPMV) (MAPA REPATRIADOS comerciales.xlsx)</option>
+                    {% endif %}
                 </select>
             </div>
 

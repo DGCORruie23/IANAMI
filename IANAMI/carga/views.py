@@ -15,6 +15,12 @@ from .models import (
     TramitesMigratorios, Inadmision2da, InternacionN, TipoIngresoP, MetricaComparativa,
     MexRepatriados, RepatriadosComerciales
 )
+from usuario.permissions import (
+    get_user_role_info,
+    upload_permission_required,
+    admin_or_superuser_required,
+    AREA_MODELS
+)
 
 # Cache dictionaries for fast queries
 estados_cache = {}
@@ -541,7 +547,10 @@ def process_row_to_batch(model_type, row, batch):
     return rows_added
 
 @login_required
+@upload_permission_required
 def upload_view(request):
+    role_info = get_user_role_info(request.user)
+
     if request.method == "POST":
         import json
         is_json = request.content_type == "application/json"
@@ -564,6 +573,16 @@ def upload_view(request):
             
             if not csv_file or not model_type:
                 return JsonResponse({"status": "error", "message": "Archivo o tipo de modelo faltante."}, status=400)
+
+        # Validate that Editor users can only upload models matching their area
+        if role_info['is_editor']:
+            user_area = role_info.get('area_abrev', '')
+            allowed_models = AREA_MODELS.get(user_area, [])
+            if allowed_models and model_type not in allowed_models:
+                return JsonResponse({
+                    "status": "error",
+                    "message": f"Acceso restringido: Su área ({user_area}) solo tiene permitido cargar archivos de: {', '.join(allowed_models)}."
+                }, status=403)
         
         # Handle nationalities catalog separately
         if model_type == "nacionalidades":
@@ -691,10 +710,11 @@ def upload_view(request):
         except Exception as e:
             return JsonResponse({"status": "error", "message": f"Error al procesar el archivo: {str(e)}"}, status=500)
             
-    return render(request, "carga/upload.html")
+    return render(request, "carga/upload.html", {"user_role": role_info})
 
 
 @login_required
+@admin_or_superuser_required
 def carga_comparativo_view(request):
     if request.method == "POST":
         file = request.FILES.get("file")

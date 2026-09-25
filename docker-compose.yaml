@@ -17,6 +17,7 @@ services:
       - ./IANAMI/server:/src/IANAMI/server
       - ./IANAMI/inteligencia:/src/IANAMI/inteligencia
       - ./IANAMI/carga:/src/IANAMI/carga
+      - ./IANAMI/usuario:/src/IANAMI/usuario
 
   db:
     profiles: ["dev", "server"]

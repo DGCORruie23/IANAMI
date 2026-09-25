@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
     'inteligencia',
     'carga',
+    'usuario',
 ]
 
 MIDDLEWARE = [
