@@ -16,13 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
-from usuario.views import custom_logout_view
+from usuario.views import custom_login_view, custom_logout_view, captcha_image_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
+    path('accounts/login/', custom_login_view, name='login'),
+    path('accounts/captcha/refresh/', captcha_image_view, name='captcha_refresh'),
     path('accounts/logout/', custom_logout_view, name='logout'),
     path('', include('inteligencia.urls')),
     path('', include('carga.urls')),
