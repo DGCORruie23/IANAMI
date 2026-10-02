@@ -318,6 +318,38 @@
         gap: 24px;
         margin-bottom: 24px;
       }
+      /* Folder Tab for Panels */
+      .folder-tab-group {
+        margin-bottom: 24px;
+        position: relative;
+      }
+      .folder-tab-group .panel-card {
+        margin-bottom: 0 !important;
+      }
+      .folder-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #15342a;
+        color: #f2f0e8;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 8px 38px 7px 34px;
+        border-radius: 6px 14px 0 0;
+        border: 1px solid var(--borde);
+        border-bottom: 1px solid #1e463a;
+        margin-left: 14px;
+        position: relative;
+        bottom: -1px;
+        z-index: 2;
+        box-shadow: 0 -2px 5px rgba(44, 44, 42, 0.08);
+      }
+      .folder-tab svg {
+        color: var(--arena);
+      }
       .panel-card {
         background: var(--blanco);
         border: 1px solid var(--borde);
@@ -863,28 +895,37 @@
           <div id="regulacion-actas-content" class="regulacion-sub-content">
 
             <!-- PANEL 1: Solicitudes de Validación de Actas -->
-            <div class="panel-card" style="margin-bottom: 24px;">
-              <div class="panel-header">Hallazgos Relevantes</div>
-              <div class="panel-body">
-                <div class="bullets-container" id="bullets-chart1">
-                  <ul>
-                    <li><span class="highlight-red" id="c1-bullet-trend">Decremento del ...</span> del total de solicitudes de semana a semana (de <span id="c1-bullet-prev">0</span> a <span id="c1-bullet-curr">0</span>).</li>
-                    <li>Del <strong>total</strong> (<span id="c1-bullet-curr-total">0</span>), los <strong>matrimonios</strong> representaron <span id="c1-bullet-mat-pct">0</span>% (<span id="c1-bullet-mat-val">0</span>) y los <strong>nacimientos</strong> <span id="c1-bullet-nac-pct">0</span>% (<span id="c1-bullet-nac-val">0</span>). Si bien existen variaciones de semana a semana en la serie histórica, la <strong>distribución por acto</strong> se mantiene constante.</li>
-                  </ul>
-                </div>
-                <div class="chart-container-wrapper">
-                  <div class="trend-indicator" id="c1-trend-indicator">
-                    <span id="c1-trend-val">-20.74%</span>
-                    <span class="trend-arrow" id="c1-trend-arrow">➔</span>
+            <div class="folder-tab-group">
+              <div class="folder-tab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                Indicador 1: Volumen de solicitudes a nivel nacional
+              </div>
+              <div class="panel-card">
+                <div class="panel-header">Hallazgos Relevantes</div>
+                <div class="panel-body">
+                  <div class="bullets-container" id="bullets-chart1">
+                    <ul>
+                      <li>Se presenta un <span class="highlight-red" id="c1-bullet-trend">Decremento del ...</span> (<span class="highlight-red" id="c1-bullet-diff1">0</span> solicitudes) en el volumen del total de semana a semana (de <span id="c1-bullet-prev">0</span> a <span id="c1-bullet-curr">0</span>).</li>
+                      <li>Del <strong>total</strong> (<span id="c1-bullet-curr-total">0</span>), los <strong>matrimonios</strong> representaron <span id="c1-bullet-mat-pct">0</span>% (<span id="c1-bullet-mat-val">0</span>) y los <strong>nacimientos</strong> <span id="c1-bullet-nac-pct">0</span>% (<span id="c1-bullet-nac-val">0</span>). Si bien existen variaciones de semana a semana en la serie histórica, la <strong>distribución por acto</strong> se mantiene constante.</li>
+                    </ul>
                   </div>
-                  <canvas id="chart-solicitudes"></canvas>
+                  <div class="chart-container-wrapper">
+                    <div class="trend-indicator" id="c1-trend-indicator">
+                      <span id="c1-trend-val">-20.74%</span>
+                      <span class="trend-arrow" id="c1-trend-arrow">➔</span>
+                    </div>
+                    <canvas id="chart-solicitudes"></canvas>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- PANEL 2: Registro Civil de Mayor Volumen (Dividido por Acto) -->
-            <div class="panels-container" style="margin-bottom: 24px;">
-              <!-- PANEL 2A: Entidad Federativa de Registro de Mayor Volumen -->
+            <!-- PANEL 2A: Entidad Federativa de Registro de Mayor Volumen -->
+            <div class="folder-tab-group">
+              <div class="folder-tab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                Indicador 2: Volumen a nivel nacional por Registro Civil
+              </div>
               <div class="panel-card">
                 <div class="panel-header">Entidad Federativa de Registro de Mayor Volumen</div>
                 <div class="panel-body">
@@ -904,8 +945,14 @@
                   <div id="legend-top-states-mat" class="state-legend" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 12px; border-top: 1px solid var(--borde); padding-top: 8px; font-size: 11px; font-weight: 600; font-family: 'DM Sans', sans-serif;"></div>
                 </div>
               </div>
+            </div>
 
-              <!-- PANEL 2B: Oficina de Representación (OR) de Mayor Volumen -->
+            <!-- PANEL 2B: Oficina de Representación (OR) de Mayor Volumen -->
+            <div class="folder-tab-group">
+              <div class="folder-tab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                Indicador 3: Volumen a nivel nacional por Oficina de Representación
+              </div>
               <div class="panel-card">
                 <div class="panel-header">Oficina de Representación (OR) de Mayor Volumen</div>
                 <div class="panel-body">
@@ -928,38 +975,44 @@
             </div>
 
             <!-- PANEL 3: Concentración por Nacionalidades (Últimas 2 Semanas) -->
-            <div class="panel-card" style="margin-top: 24px;">
-              <div class="panel-header">Distribución y Concentración de Nacionalidades (Últimas 2 Semanas)</div>
-              <div class="panel-body">
-                <div class="pies-wrapper">
-                  <!-- Column 1: Previous Week -->
-                  <div class="pie-column">
-                    <div class="pie-header green" id="pie-prev-header">Semana anterior</div>
-                    <div class="pie-body">
-                      <div class="pie-bullets">
-                        <ul id="pie-prev-list">
-                          <!-- Loaded dynamically -->
-                        </ul>
-                        <div style="margin-top: 8px; font-weight: 700;">Concentración: <span id="pie-prev-concentration">0%</span> del total</div>
-                      </div>
-                      <div class="pie-chart-canvas-wrapper">
-                        <canvas id="chart-pie-prev"></canvas>
+            <div class="folder-tab-group">
+              <div class="folder-tab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                Indicador 4: Principales Nacionalidades
+              </div>
+              <div class="panel-card">
+                <div class="panel-header">Distribución y Concentración de Nacionalidades (Últimas 2 Semanas)</div>
+                <div class="panel-body">
+                  <div class="pies-wrapper">
+                    <!-- Column 1: Previous Week -->
+                    <div class="pie-column">
+                      <div class="pie-header green" id="pie-prev-header">Semana anterior</div>
+                      <div class="pie-body">
+                        <div class="pie-bullets">
+                          <ul id="pie-prev-list">
+                            <!-- Loaded dynamically -->
+                          </ul>
+                          <div style="margin-top: 8px; font-weight: 700;">Concentración: <span id="pie-prev-concentration">0%</span> del total</div>
+                        </div>
+                        <div class="pie-chart-canvas-wrapper">
+                          <canvas id="chart-pie-prev"></canvas>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <!-- Column 2: Current Week -->
-                  <div class="pie-column">
-                    <div class="pie-header red" id="pie-curr-header">Última semana</div>
-                    <div class="pie-body">
-                      <div class="pie-bullets">
-                        <ul id="pie-curr-list">
-                          <!-- Loaded dynamically -->
-                        </ul>
-                        <div style="margin-top: 8px; font-weight: 700;">Concentración: <span id="pie-curr-concentration">0%</span> del total</div>
-                      </div>
-                      <div class="pie-chart-canvas-wrapper">
-                        <canvas id="chart-pie-curr"></canvas>
+                    <!-- Column 2: Current Week -->
+                    <div class="pie-column">
+                      <div class="pie-header red" id="pie-curr-header">Última semana</div>
+                      <div class="pie-body">
+                        <div class="pie-bullets">
+                          <ul id="pie-curr-list">
+                            <!-- Loaded dynamically -->
+                          </ul>
+                          <div style="margin-top: 8px; font-weight: 700;">Concentración: <span id="pie-curr-concentration">0%</span> del total</div>
+                        </div>
+                        <div class="pie-chart-canvas-wrapper">
+                          <canvas id="chart-pie-curr"></canvas>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1582,6 +1635,7 @@
         
         document.getElementById('c1-bullet-prev').textContent = sum.prev_total;
         document.getElementById('c1-bullet-curr').textContent = sum.last_total;
+        document.getElementById('c1-bullet-diff1').textContent = Math.abs(sum.prev_total - sum.last_total);
         document.getElementById('c1-bullet-curr-total').textContent = sum.last_total;
         document.getElementById('c1-bullet-mat-pct').textContent = sum.last_mat_pct;
         document.getElementById('c1-bullet-mat-val').textContent = sum.last_mat;
